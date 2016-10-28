@@ -3,6 +3,8 @@
 #include <string.h>
 #include <getopt.h>
 #include "configparse.h"
+#include "auth.h"
+#include "keepalive.h"
 
 #define VERSION "0.1.0"
 

@@ -12,10 +12,10 @@ struct config {
     char *host_name;
     char PRIMARY_DNS[4];
     char dhcp_server[4];
-    unsigned char AUTH_VERSION;
-    unsigned char mac;
+    unsigned char AUTH_VERSION[2];
+    unsigned char mac[6];
     char *host_os;
-    unsigned char KEEP_ALIVE_VERSION;
+    unsigned char KEEP_ALIVE_VERSION[2];
     int ror_version;
     unsigned char pppoe_flag;
     unsigned char keep_alive2_flag;

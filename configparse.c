@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "configparse.h"
+#include "debug.h"
 
 int verbose_flag = 0;
 char *mode;
@@ -48,46 +49,73 @@ static int read_d_config(char *buf, int size) {
 
     if (strcmp(key, "server") == 0) {
         strcpy(drcom_config.server, value);
-        printf("%s\n", drcom_config.server);
+        DEBUG_PRINT(("%s\n", drcom_config.server));
     } else if (strcmp(key, "username") == 0) {
         drcom_config.username = value;
-        printf("%s\n", drcom_config.username);
+        DEBUG_PRINT(("%s\n", drcom_config.username));
     } else if (strcmp(key, "password") == 0) {
         drcom_config.password = value;
-        printf("%s\n", drcom_config.password);
+        DEBUG_PRINT(("%s\n", drcom_config.password));
     } else if (strcmp(key, "CONTROLCHECKSTATUS") == 0) {
         value = strtok(value, delim2);
         sscanf(value, "%02x", &drcom_config.CONTROLCHECKSTATUS);
-        printf("0x%02x\n", drcom_config.CONTROLCHECKSTATUS);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.CONTROLCHECKSTATUS));
     } else if (strcmp(key, "ADAPTERNUM") == 0) {
         value = strtok(value, delim2);
         sscanf(value, "%02x", &drcom_config.ADAPTERNUM);
-        printf("0x%02x\n", drcom_config.ADAPTERNUM);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.ADAPTERNUM));
     } else if (strcmp(key, "host_ip") == 0) {
         strcpy(drcom_config.host_ip, value);
-        printf("%s\n", drcom_config.host_ip);
+        DEBUG_PRINT(("%s\n", drcom_config.host_ip));
     } else if (strcmp(key, "IPDOG") == 0) {
         value = strtok(value, delim2);
         sscanf(value, "%02x", &drcom_config.IPDOG);
-        printf("0x%02x\n", drcom_config.IPDOG);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.IPDOG));
     } else if (strcmp(key, "host_name") == 0) {
         drcom_config.host_name = value;
-        printf("%s\n", drcom_config.host_name);
+        DEBUG_PRINT(("%s\n", drcom_config.host_name));
     } else if (strcmp(key, "PRIMARY_DNS") == 0) {
         strcpy(drcom_config.PRIMARY_DNS, value);
-        printf("%s\n", drcom_config.PRIMARY_DNS);
+        DEBUG_PRINT(("%s\n", drcom_config.PRIMARY_DNS));
     } else if (strcmp(key, "dhcp_server") == 0) {
         strcpy(drcom_config.dhcp_server, value);
-        printf("%s\n", drcom_config.dhcp_server);
+        DEBUG_PRINT(("%s\n", drcom_config.dhcp_server));
     } else if (strcmp(key, "AUTH_VERSION") == 0) {
-        
+        char *v1 = strtok(value, delim2);
+        char *v2 = strtok(NULL, delim2);
+        sscanf(v1, "%02x", &v1);
+        sscanf(v2, "%02x", &v2);
+        memcpy(&drcom_config.AUTH_VERSION[0], &v1, 1);
+        memcpy(&drcom_config.AUTH_VERSION[1], &v2, 1);
+        DEBUG_PRINT(("0x%x\n", drcom_config.AUTH_VERSION[0]));
+        DEBUG_PRINT(("0x%x\n", drcom_config.AUTH_VERSION[1]));
     } else if (strcmp(key, "mac") == 0) {
-        
+        char *delim3 = "x";
+        strsep(&value, delim3);
+        sscanf(value, "%02x%02x%02x%02x%02x%02x", &drcom_config.mac[0],
+                                                  &drcom_config.mac[1],
+                                                  &drcom_config.mac[2],
+                                                  &drcom_config.mac[3],
+                                                  &drcom_config.mac[4],
+                                                  &drcom_config.mac[5]);
+
+#ifdef DEBUG
+        for (int i = 0; i < 6; ++i) {
+            printf("0x%x\n", drcom_config.mac[i]);
+        }
+#endif
     } else if (strcmp(key, "host_os") == 0) {
         drcom_config.host_os = value;
-        printf("%s\n", drcom_config.host_os);
+        DEBUG_PRINT(("%s\n", drcom_config.host_os));
     } else if (strcmp(key, "KEEP_ALIVE_VERSION") == 0) {
-        
+        char *v1 = strtok(value, delim2);
+        char *v2 = strtok(NULL, delim2);
+        sscanf(v1, "%02x", &v1);
+        sscanf(v2, "%02x", &v2);
+        memcpy(&drcom_config.KEEP_ALIVE_VERSION[0], &v1, 1);
+        memcpy(&drcom_config.KEEP_ALIVE_VERSION[1], &v2, 1);
+        DEBUG_PRINT(("0x%x\n", drcom_config.KEEP_ALIVE_VERSION[0]));
+        DEBUG_PRINT(("0x%x\n", drcom_config.KEEP_ALIVE_VERSION[1]));
     } else if (strcmp(key, "ror_version") == 0) {
         if (strcmp(value, "True")) {
             drcom_config.ror_version = 1;
