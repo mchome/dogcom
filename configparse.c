@@ -29,6 +29,7 @@ int config_parse(char *filepath, char *mode) {
             read_p_config(buf, sizeof(buf));
         }
     }
+    printf("\n\n");
     fclose(ptr_file);
 
     return 0;
@@ -51,10 +52,10 @@ static int read_d_config(char *buf, int size) {
         strcpy(drcom_config.server, value);
         DEBUG_PRINT(("%s\n", drcom_config.server));
     } else if (strcmp(key, "username") == 0) {
-        drcom_config.username = value;
+        strcpy(drcom_config.username, value);
         DEBUG_PRINT(("%s\n", drcom_config.username));
     } else if (strcmp(key, "password") == 0) {
-        drcom_config.password = value;
+        strcpy(drcom_config.password, value);
         DEBUG_PRINT(("%s\n", drcom_config.password));
     } else if (strcmp(key, "CONTROLCHECKSTATUS") == 0) {
         value = strtok(value, delim2);
@@ -72,7 +73,7 @@ static int read_d_config(char *buf, int size) {
         sscanf(value, "%02x", &drcom_config.IPDOG);
         DEBUG_PRINT(("0x%02x\n", drcom_config.IPDOG));
     } else if (strcmp(key, "host_name") == 0) {
-        drcom_config.host_name = value;
+        strcpy(drcom_config.host_name, value);
         DEBUG_PRINT(("%s\n", drcom_config.host_name));
     } else if (strcmp(key, "PRIMARY_DNS") == 0) {
         strcpy(drcom_config.PRIMARY_DNS, value);
@@ -98,14 +99,15 @@ static int read_d_config(char *buf, int size) {
                                                   &drcom_config.mac[3],
                                                   &drcom_config.mac[4],
                                                   &drcom_config.mac[5]);
-
 #ifdef DEBUG
-        for (int i = 0; i < 6; ++i) {
-            printf("0x%x\n", drcom_config.mac[i]);
+        printf("0x");
+        for (int i = 0; i < 6; i++) {
+            printf("%x", drcom_config.mac[i]);
         }
+        printf("\n");
 #endif
     } else if (strcmp(key, "host_os") == 0) {
-        drcom_config.host_os = value;
+        strcpy(drcom_config.host_os, value);
         DEBUG_PRINT(("%s\n", drcom_config.host_os));
     } else if (strcmp(key, "KEEP_ALIVE_VERSION") == 0) {
         char *v1 = strtok(value, delim2);
@@ -122,6 +124,7 @@ static int read_d_config(char *buf, int size) {
         } else  {
             drcom_config.ror_version = 0;
         }
+        DEBUG_PRINT(("%d\n", drcom_config.ror_version));
     } else {
         return 1;
     }

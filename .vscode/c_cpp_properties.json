@@ -24,8 +24,8 @@
             }
         },
         {
-            "name": "Cygwin",
-            "includePath": ["c:/msys64/usr/lib/gcc/x86_64-pc-msys/5.3.0/include"],
+            "name": "msys2",
+            "includePath": ["C:/msys64/usr/include"],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

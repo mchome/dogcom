@@ -6,7 +6,7 @@
 #include "auth.h"
 #include "keepalive.h"
 
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 
 void print_help(int exval);
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'v':
                 verbose_flag = 1;
-                printf("Verbose mode\n");
+                // printf("Verbose mode ON\n");
                 // printf("%d\n", verbose_flag);
                 break;
             case 'h':
@@ -69,8 +69,13 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
+    
     if (mode != NULL && file_path != NULL) {
-        config_parse(file_path, mode);
+        if (!config_parse(file_path, mode)) {
+            dogcom(5);
+        } else {
+            return 1;
+        }
     } else {
         printf("Need more options!");
         return 1;
