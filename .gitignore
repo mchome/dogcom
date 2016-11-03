@@ -1,5 +1,7 @@
 test
 drcom.conf
+dogcom
+main
 
 # Prerequisites
 *.d

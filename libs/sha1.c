@@ -195,6 +195,13 @@ void SHA1Final(unsigned char digest[20], SHA1_CTX* context)
     memset(context, '\0', sizeof(*context));
     memset(&finalcount, '\0', sizeof(finalcount));
 }
+
+void SHA1(const unsigned char* data, uint32_t len, unsigned char digest[20]) {
+    SHA1_CTX* ctx;
+    SHA1Init(&ctx);
+    SHA1Update(&ctx, data, len);
+    SHA1Final(digest, &ctx);
+}
 /* ================ end of sha1.c ================ */
 
 #ifdef REDIS_TEST

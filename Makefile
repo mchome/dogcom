@@ -1,2 +1,2 @@
 CC = gcc
-CFLAGS += -DDEBUG
+CFLAGS += -DDEBUG -DTEST -std=gnu99

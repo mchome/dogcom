@@ -267,4 +267,11 @@ void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 	memset(ctx, 0, sizeof(*ctx));
 }
 
+void MD4(const void *data, unsigned long size, unsigned char *result) {
+	MD4_CTX ctx;
+	MD4_Init(&ctx);
+	MD4_Update(&ctx, data, size);
+	MD4_Final(result, &ctx);
+}
+
 #endif

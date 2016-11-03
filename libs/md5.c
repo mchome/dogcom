@@ -288,4 +288,11 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx)
 	memset(ctx, 0, sizeof(*ctx));
 }
 
+void MD5(const void *data, unsigned long size, unsigned char *result) {
+	MD5_CTX ctx;
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, data, size);
+	MD5_Final(result, &ctx);
+}
+
 #endif

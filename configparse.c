@@ -59,18 +59,18 @@ static int read_d_config(char *buf, int size) {
         DEBUG_PRINT(("%s\n", drcom_config.password));
     } else if (strcmp(key, "CONTROLCHECKSTATUS") == 0) {
         value = strtok(value, delim2);
-        sscanf(value, "%02x", &drcom_config.CONTROLCHECKSTATUS);
+        sscanf(value, "%02hhx", &drcom_config.CONTROLCHECKSTATUS);
         DEBUG_PRINT(("0x%02x\n", drcom_config.CONTROLCHECKSTATUS));
     } else if (strcmp(key, "ADAPTERNUM") == 0) {
         value = strtok(value, delim2);
-        sscanf(value, "%02x", &drcom_config.ADAPTERNUM);
+        sscanf(value, "%02hhx", &drcom_config.ADAPTERNUM);
         DEBUG_PRINT(("0x%02x\n", drcom_config.ADAPTERNUM));
     } else if (strcmp(key, "host_ip") == 0) {
         strcpy(drcom_config.host_ip, value);
         DEBUG_PRINT(("%s\n", drcom_config.host_ip));
     } else if (strcmp(key, "IPDOG") == 0) {
         value = strtok(value, delim2);
-        sscanf(value, "%02x", &drcom_config.IPDOG);
+        sscanf(value, "%02hhx", &drcom_config.IPDOG);
         DEBUG_PRINT(("0x%02x\n", drcom_config.IPDOG));
     } else if (strcmp(key, "host_name") == 0) {
         strcpy(drcom_config.host_name, value);
@@ -84,25 +84,26 @@ static int read_d_config(char *buf, int size) {
     } else if (strcmp(key, "AUTH_VERSION") == 0) {
         char *v1 = strtok(value, delim2);
         char *v2 = strtok(NULL, delim2);
-        sscanf(v1, "%02x", &v1);
-        sscanf(v2, "%02x", &v2);
-        memcpy(&drcom_config.AUTH_VERSION[0], &v1, 1);
-        memcpy(&drcom_config.AUTH_VERSION[1], &v2, 1);
-        DEBUG_PRINT(("0x%x\n", drcom_config.AUTH_VERSION[0]));
-        DEBUG_PRINT(("0x%x\n", drcom_config.AUTH_VERSION[1]));
+        sscanf(v1, "%02hhx", v1);
+        sscanf(v2, "%02hhx", v2);
+        memcpy(&drcom_config.AUTH_VERSION[0], v1, 1);
+        memcpy(&drcom_config.AUTH_VERSION[1], v2, 1);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.AUTH_VERSION[0]));
+        DEBUG_PRINT(("0x%02x\n", drcom_config.AUTH_VERSION[1]));
     } else if (strcmp(key, "mac") == 0) {
         char *delim3 = "x";
         strsep(&value, delim3);
-        sscanf(value, "%02x%02x%02x%02x%02x%02x", &drcom_config.mac[0],
-                                                  &drcom_config.mac[1],
-                                                  &drcom_config.mac[2],
-                                                  &drcom_config.mac[3],
-                                                  &drcom_config.mac[4],
-                                                  &drcom_config.mac[5]);
+        sscanf(value, "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
+               &drcom_config.mac[0],
+               &drcom_config.mac[1],
+               &drcom_config.mac[2],
+               &drcom_config.mac[3],
+               &drcom_config.mac[4],
+               &drcom_config.mac[5]);
 #ifdef DEBUG
         printf("0x");
         for (int i = 0; i < 6; i++) {
-            printf("%x", drcom_config.mac[i]);
+            printf("%02x", drcom_config.mac[i]);
         }
         printf("\n");
 #endif
@@ -112,19 +113,19 @@ static int read_d_config(char *buf, int size) {
     } else if (strcmp(key, "KEEP_ALIVE_VERSION") == 0) {
         char *v1 = strtok(value, delim2);
         char *v2 = strtok(NULL, delim2);
-        sscanf(v1, "%02x", &v1);
-        sscanf(v2, "%02x", &v2);
-        memcpy(&drcom_config.KEEP_ALIVE_VERSION[0], &v1, 1);
-        memcpy(&drcom_config.KEEP_ALIVE_VERSION[1], &v2, 1);
-        DEBUG_PRINT(("0x%x\n", drcom_config.KEEP_ALIVE_VERSION[0]));
-        DEBUG_PRINT(("0x%x\n", drcom_config.KEEP_ALIVE_VERSION[1]));
+        sscanf(v1, "%02hhx", v1);
+        sscanf(v2, "%02hhx", v2);
+        memcpy(&drcom_config.KEEP_ALIVE_VERSION[0], v1, 1);
+        memcpy(&drcom_config.KEEP_ALIVE_VERSION[1], v2, 1);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.KEEP_ALIVE_VERSION[0]));
+        DEBUG_PRINT(("0x%02x\n", drcom_config.KEEP_ALIVE_VERSION[1]));
     } else if (strcmp(key, "ror_version") == 0) {
-        if (strcmp(value, "True")) {
+        if (strcmp(value, "True") == 0) {
             drcom_config.ror_version = 1;
         } else  {
             drcom_config.ror_version = 0;
         }
-        DEBUG_PRINT(("%d\n", drcom_config.ror_version));
+        DEBUG_PRINT(("\n%d\n", drcom_config.ror_version));
     } else {
         return 1;
     }
@@ -147,15 +148,15 @@ static int read_p_config(char *buf, int size) {
 
     if (strcmp(key, "server") == 0) {
         strcpy(drcom_config.server, value);
-        printf("%s\n", drcom_config.server);
+        DEBUG_PRINT(("%s\n", drcom_config.server));
     } else if (strcmp(key, "pppoe_flag") == 0) {
         value = strtok(value, delim2);
-        sscanf(value, "%02x", &drcom_config.pppoe_flag);
-        printf("0x%02x\n", drcom_config.pppoe_flag);
+        sscanf(value, "%02hhx", &drcom_config.pppoe_flag);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.pppoe_flag));
     } else if (strcmp(key, "keep_alive2_flag") == 0) {
         value = strtok(value, delim2);
-        sscanf(value, "%02x", &drcom_config.keep_alive2_flag);
-        printf("0x%02x\n", drcom_config.keep_alive2_flag);
+        sscanf(value, "%02hhx", &drcom_config.keep_alive2_flag);
+        DEBUG_PRINT(("0x%02x\n", drcom_config.keep_alive2_flag));
     } else {
         return 1;
     }

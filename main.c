@@ -4,9 +4,8 @@
 #include <getopt.h>
 #include "configparse.h"
 #include "auth.h"
-#include "keepalive.h"
 
-#define VERSION "0.2.0"
+#define VERSION "0.5.0"
 
 void print_help(int exval);
 
