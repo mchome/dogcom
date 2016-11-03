@@ -35,7 +35,7 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
 #ifdef TEST
     unsigned char test[4] = {0x52, 0x6c, 0xe4, 0x00};
     memcpy(seed, test, 4);
-    print_packet("<PREP SEED> ", seed, 4);
+    print_packet("[TEST MODE]<PREP SEED> ", seed, 4);
     return 0;
 #endif
 
@@ -55,7 +55,7 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
 
     memcpy(seed, &recv_packet[4], 4 * sizeof(*recv_packet));
 #ifdef DEBUG
-    print_packet("[TEST MODE]<GET SEED> ", seed, 4);
+    print_packet("<GET SEED> ", seed, 4);
 #endif
 
     return 0;
@@ -280,11 +280,18 @@ int dogcom(int try_times) {
         } else {
             if(!login(sockfd, dest_addr, seed, auth_information)) {
                 int keepalive_counter = 0;
-                if(!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
-                    keepalive_2(sockfd, dest_addr, seed, auth_information, keepalive_counter);
-                    close(sockfd);
-                    return 0;
-                };
+                int first = 1;
+                while (1) {
+                    if(!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
+                        if(keepalive_2(sockfd, dest_addr, seed, &keepalive_counter, &first)) {
+                            continue;
+                        }
+                        printf("Keepalive in loop.\n");
+                        sleep(20);
+                    } else {
+                        continue;
+                    }
+                }
             } else {
                 printf("Retrying...\n");
                 sleep(3);
