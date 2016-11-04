@@ -2,6 +2,7 @@ test
 drcom.conf
 dogcom
 main
+.vscode
 
 # Prerequisites
 *.d

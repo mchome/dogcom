@@ -1,4 +1,4 @@
-# dogcom
+# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status")
 [Drcom-generic](https://github.com/drcoms/drcom-generic) implementation in C.
 
 ```
@@ -12,6 +12,8 @@ Options:
         --verbose, -v                         set verbose flag
         --help, -h                            display this help
 ```
+
+Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-generic).
 
 example:
 
@@ -30,7 +32,7 @@ todo:
 - [jlu-drcom-client](https://github.com/drcoms/jlu-drcom-client/tree/master/C-version 'feix')
 
 ### Special thanks:
-- [Drcom-generic](https://github.com/drcoms/drcom-generic)
+- [Drcom-generic](https://github.com/drcoms/drcom-generic 'ly0')
 
 ### License:
 ![AGPL V3](https://cloud.githubusercontent.com/assets/7392658/20011165/a0caabdc-a2e5-11e6-974c-8d4961c7d6d3.png)

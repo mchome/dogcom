@@ -1,0 +1,10 @@
+language: c
+compiler: gcc
+
+script:
+    - make test=y
+    - ./dogcom -m dhcp -c sample.conf
+
+branches:
+    only:
+        - master
