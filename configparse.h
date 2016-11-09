@@ -18,7 +18,7 @@ struct config {
     unsigned char KEEP_ALIVE_VERSION[2];
     int ror_version;
     unsigned char pppoe_flag;
-    unsigned char keep_alive2_flag;
+    unsigned char keep_alive2_flag; /* abandoned */
 };
 
 extern struct config drcom_config;

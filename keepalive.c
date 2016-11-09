@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include "libs/md4.h"
 #include "libs/md5.h"
-// #include "libs/sha1.h"
+#include "libs/sha1.h"
 #include "keepalive.h"
 #include "configparse.h"
 #include "auth.h"
@@ -54,7 +54,50 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
     return 0;
 }
 
-void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive_counter, int filepacket, int type){
+void gen_crc(unsigned char seed[], int encrypt_type, unsigned char crc[]) {
+    if (encrypt_type == 0) {
+        char DRCOM_DIAL_EXT_PROTO_CRC_INIT[4] = {0xc7, 0x2f, 0x31, 0x01};
+        char gencrc_tmp[4] = {0x7e};
+        memcpy(crc, DRCOM_DIAL_EXT_PROTO_CRC_INIT, 4);
+        memcpy(crc + 4, gencrc_tmp, 4);
+    } else if (encrypt_type == 1) {
+        unsigned char hash[32] = {0};
+        MD5(seed, 4, hash);
+        crc[0] = hash[2];
+        crc[1] = hash[3];
+        crc[2] = hash[8];
+        crc[3] = hash[9];
+        crc[4] = hash[5];
+        crc[5] = hash[6];
+        crc[6] = hash[13];
+        crc[7] = hash[14];
+    } else if (encrypt_type == 2) {
+        unsigned char hash[32] = {0};
+        MD4(seed, 4, hash);
+        crc[0] = hash[1];
+        crc[1] = hash[2];
+        crc[2] = hash[8];
+        crc[3] = hash[9];
+        crc[4] = hash[4];
+        crc[5] = hash[5];
+        crc[6] = hash[11];
+        crc[7] = hash[12];
+    } else if (encrypt_type == 3) {
+        unsigned char hash[32] = {0};
+        SHA1(seed, 4, hash);
+        crc[0] = hash[2];
+        crc[1] = hash[3];
+        crc[2] = hash[9];
+        crc[3] = hash[10];
+        crc[4] = hash[5];
+        crc[5] = hash[6];
+        crc[6] = hash[15];
+        crc[7] = hash[16];
+    }
+}
+
+
+void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive_counter, int filepacket, int type, int encrypt_type){
     keepalive_2_packet[0] = 0x07;
     keepalive_2_packet[1] = keepalive_counter;
     keepalive_2_packet[2] = 0x28;
@@ -67,19 +110,25 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
         memcpy(keepalive_2_packet + 6, drcom_config.KEEP_ALIVE_VERSION, 2);
     }
     keepalive_2_packet[8] = 0x2f;
-    keepalive_2_packet[9] = 0x12; 
+    keepalive_2_packet[9] = 0x12;
     if(type == 3) {
-        unsigned char host_ip[4];
-        sscanf(drcom_config.host_ip, "%hhd.%hhd.%hhd.%hhd",
-               &host_ip[0],
-               &host_ip[1],
-               &host_ip[2],
-               &host_ip[3]);
-        memcpy(keepalive_2_packet + 28, host_ip, 4);
+        unsigned char host_ip[4] = {0};
+        if (strcmp(mode, "dhcp") == 0) {
+            sscanf(drcom_config.host_ip, "%hhd.%hhd.%hhd.%hhd",
+                &host_ip[0],
+                &host_ip[1],
+                &host_ip[2],
+                &host_ip[3]);
+            memcpy(keepalive_2_packet + 28, host_ip, 4);
+        } else if (strcmp(mode, "pppoe") == 0) {
+            unsigned char crc[8] = {0};
+            gen_crc(keepalive_2_packet, encrypt_type, crc);
+            memcpy(keepalive_2_packet + 32, crc, 8);
+        }
     }
 }
 
-int keepalive_2(int sockfd, struct sockaddr_in addr, unsigned char seed[], int *keepalive_counter, int *first) {
+int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int *first, int *encrypt_type) {
     unsigned char keepalive_2_packet[40], recv_packet[40], tail[4];
     socklen_t addrlen = sizeof(addr);
 
@@ -89,7 +138,11 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, unsigned char seed[], int *
     if (*first) {
         // send the file packet
         memset(keepalive_2_packet, 0, 40);
-        keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 1);
+        if (strcmp(mode, "pppoe") == 0) {
+            keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 1, *encrypt_type);
+        } else {
+            keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 1, 0);
+        }
         (*keepalive_counter)++;
 
         sendto(sockfd, keepalive_2_packet, 40, 0, (struct sockaddr *)&addr, sizeof(addr));
@@ -122,7 +175,11 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, unsigned char seed[], int *
     // send the first pacekt
     *first = 0;
     memset(keepalive_2_packet, 0, 40);
-    keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 1);
+    if (strcmp(mode, "pppoe") == 0) {
+        keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 1, *encrypt_type);
+    } else {
+        keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 1, 0);
+    }
     (*keepalive_counter)++;
     sendto(sockfd, keepalive_2_packet, 40, 0, (struct sockaddr *)&addr, sizeof(addr));
 
@@ -161,7 +218,11 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, unsigned char seed[], int *
 
     // send the third packet
     memset(keepalive_2_packet, 0, 40);
-    keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 3);
+    if (strcmp(mode, "pppoe") == 0) {
+        keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 3, *encrypt_type);
+    } else {
+        keepalive_2_packetbuilder(keepalive_2_packet, *keepalive_counter % 0xFF, *first, 3, 0);
+    }
     memcpy(keepalive_2_packet + 16, tail, 4);
     (*keepalive_counter)++;
     sendto(sockfd, keepalive_2_packet, 40, 0, (struct sockaddr *)&addr, sizeof(addr));

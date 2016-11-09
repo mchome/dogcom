@@ -25,7 +25,8 @@ to build:
 
 todo:
 - [x] DHCP Version
-- [ ] PPPOE Version
+- [x] PPPoE Version
+- [ ] Logging function
 
 ### Thanks:
 - [gdut-drcom](https://github.com/chenhaowen01/gdut-drcom 'chenhaowen01')

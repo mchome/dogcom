@@ -22,7 +22,6 @@ int config_parse(char *filepath, char *mode) {
     }
 
     while (fgets(buf, sizeof(buf), ptr_file)) {
-        // printf("%s", buf);
         if (strcmp(mode, "dhcp") == 0) {
             read_d_config(buf, sizeof(buf));
         } else if (strcmp(mode, "pppoe") == 0) {

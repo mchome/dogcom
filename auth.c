@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include "libs/md4.h"
 #include "libs/md5.h"
-// #include "libs/sha1.h"
+#include "libs/sha1.h"
 #include "auth.h"
 #include "configparse.h"
 #include "keepalive.h"
@@ -91,16 +91,16 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     memcpy(login_packet + 57, &drcom_config.ADAPTERNUM, 1);
     unsigned long int sum = 0;
     unsigned long int mac = 0;
-    // pack
+    // unpack
     for (int i = 0; i < 6; i++) {
         sum = (int)MD5A[i] + sum * 256;
     }
-    // pack
+    // unpack
     for (int i = 0; i < 6; i++) {
         mac = (int)drcom_config.mac[i] + mac * 256;
     }
     sum ^= mac;
-    // unpack
+    // pack
     for (int i = 6; i > 0; i--) {
         MACxorMD5A[i - 1] = (unsigned char)(sum % 256);
         sum /= 256;
@@ -219,7 +219,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         print_packet("[login recv] ", recv_packet, sizeof(recv_packet));
         printf("<<< Loged in >>>\n");
     }
-    
+
     memcpy(auth_information, &recv_packet[23], 16);
 #ifdef DEBUG
     print_packet("<GET AUTH_INFORMATION> ", auth_information, 16);
@@ -232,8 +232,144 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     return 0;
 }
 
+int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigned char seed[], unsigned char sip[], int *encrypt_mode) {
+    unsigned char challenge_packet[8], recv_packet[32];
+    memset(challenge_packet, 0, 8);
+    unsigned char challenge_tmp[5] = {0x07, 0x00, 0x08, 0x00, 0x01};
+    memcpy(challenge_packet, challenge_tmp, 5);
+    challenge_packet[1] = *pppoe_counter % 0xFF;
+    (*pppoe_counter)++;
 
-int dogcom(int try_times) {
+    sendto(sockfd, challenge_packet, 8, 0, (struct sockaddr *)&addr, sizeof(addr));
+
+    if (verbose_flag) {
+        print_packet("[Challenge sent] ", challenge_packet, 8);
+    }
+#ifdef TEST
+    unsigned char test1[4] = {0x26, 0xe6, 0xe1, 0x02};
+    unsigned char test2[4] = {0xc0, 0xa8, 0x01, 0x0b};
+    memcpy(seed, test1, 4);
+    memcpy(sip, test2, 4);
+    *encrypt_mode = 1; /* encrypt_mode test switch [0 or 1] */
+    print_packet("[TEST MODE]<PREP SEED> ", seed, 4);
+    print_packet("[TEST MODE]<PREP SIP> ", sip, 4);
+    printf("[TEST MODE]<PREP ENCRYPT_MODE> %d\n", *encrypt_mode);
+    return 0;
+#endif
+
+    socklen_t addrlen = sizeof(addr);
+    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+        perror("Failed to recv data");
+        return 1;
+    }
+    if (recv_packet[0] != 0x07) {
+        printf("Bad challenge response received.\n");
+        return 1;
+    }
+    if (recv_packet[5] != 0x00) {
+        *encrypt_mode = 1;
+    } else {
+        *encrypt_mode = 0;
+    }
+
+    if (verbose_flag) {
+        print_packet("[Challenge recv] ", recv_packet, 32);
+    }
+
+    memcpy(seed, &recv_packet[8], 4);
+    memcpy(sip, &recv_packet[12], 4);
+    memcpy(drcom_config.KEEP_ALIVE_VERSION, &recv_packet[28], 2);
+#ifdef DEBUG
+    print_packet("<GET SEED> ", seed, 4);
+    print_packet("<GET SIP> ", sip, 4);
+    printf("<GET ENCRYPT_MODE> %d", *encrypt_mode);
+#endif
+
+    return 0;
+}
+
+int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigned char seed[], unsigned char sip[], int *login_first, int *encrypt_mode, int *encrypt_type) {
+    unsigned char login_packet[96], recv_packet[48];
+    memset(login_packet, 0, 96);
+    unsigned char login_tmp[5] = {0x07, 0x00, 0x60, 0x00, 0x03};
+    memcpy(login_packet, login_tmp, 5);
+    login_packet[1] = *pppoe_counter % 0xFF;
+    (*pppoe_counter)++;
+    memcpy(login_packet + 12, sip, 4);
+    if (*login_first) {
+        login_packet[17] = 0x62;
+    } else {
+        login_packet[17] = 0x63;
+    }
+    memcpy(login_packet + 19, &drcom_config.pppoe_flag, 1);
+    memcpy(login_packet + 20, seed, 4);
+    unsigned char crc[8] = {0};
+    *encrypt_type = seed[0] & 3;
+    if (!*encrypt_mode) {
+        *encrypt_type = 0;
+    }
+    gen_crc(seed, *encrypt_type, crc);
+    unsigned char crc_tmp[32] = {0};
+    memcpy(crc_tmp, login_packet, 32);
+    memcpy(crc_tmp + 24, crc, 8);
+    unsigned long int ret = 0;
+    unsigned long int sum = 0;
+    unsigned char crc2[4] = {0};
+    if (*encrypt_type == 0) {
+        for (int i = 0; i < 32; i += 4) {
+            ret = 0;
+            for(int j = 4; j > 0; j--) {
+                ret = ret * 256 + (int)crc_tmp[i + j - 1];
+            }
+            sum ^= ret;
+            sum &= 0xffffffff;
+        }
+        sum = sum * 19680126 & 0xffffffff;
+        for (int i = 0; i < 4; i++) {
+            crc2[i] = (unsigned char)(sum % 256);
+            sum /= 256;
+        }
+        memcpy(login_packet + 24, crc2, 4);
+    } else {
+        memcpy(login_packet + 24, crc, 8);
+    }
+    login_packet[39] = 0x8b;
+    memcpy(login_packet + 40, sip, 4);
+    unsigned char smask[4] = {0xff, 0xff, 0xff, 0xff};
+    memcpy(login_packet + 44, smask, 4);
+    login_packet[54] = 0x40;
+
+    sendto(sockfd, login_packet, 96, 0, (struct sockaddr *)&addr, sizeof(addr));
+    if (verbose_flag) {
+        print_packet("[PPPoE_login sent] ", login_packet, 96);
+    }
+#ifdef TEST
+    return 0;
+#endif
+
+    socklen_t addrlen = sizeof(addr);
+    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+        perror("Failed to recv data");
+        return 1;
+    }
+    if (recv_packet[0] != 0x07) {
+        printf("Bad pppoe_login response received.\n");
+        return 1;
+    }
+
+    if (verbose_flag) {
+        print_packet("[PPPoE_login recv] ", recv_packet, 48);
+    }
+
+
+    if(recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
+        DEBUG_PRINT(("Get notice packet."));
+    }
+
+    return 0;
+}
+
+int dogcom(int try_times, char *mode) {
     int sockfd;
 
     struct sockaddr_in bind_addr;
@@ -271,33 +407,74 @@ int dogcom(int try_times) {
     }
 
     // start dogcoming
-    for(int i = 0; i < try_times; i++) {
-        unsigned char seed[4];
-        unsigned char auth_information[16];
-        if (challenge(sockfd, dest_addr, seed)) {
-            printf("Retrying...\n");
-            sleep(3);
-        } else {
-            if(!login(sockfd, dest_addr, seed, auth_information)) {
-                int keepalive_counter = 0;
-                int first = 1;
-                while (1) {
-                    if(!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
-                        if(keepalive_2(sockfd, dest_addr, seed, &keepalive_counter, &first)) {
+    if (strcmp(mode, "dhcp") == 0) {
+        for(int i = 0; i <= try_times; i++) {
+            unsigned char seed[4];
+            unsigned char auth_information[16];
+            if (challenge(sockfd, dest_addr, seed)) {
+                printf("Retrying...\n");
+                sleep(3);
+            } else {
+                if (!login(sockfd, dest_addr, seed, auth_information)) {
+                    int keepalive_counter = 0;
+                    int first = 1;
+                    while (1) {
+                        if (!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
+                            if (keepalive_2(sockfd, dest_addr, &keepalive_counter, &first, 0)) {
+                                continue;
+                            }
+                            if (verbose_flag) {
+                                printf("Keepalive in loop.\n");
+                            }
+                            sleep(20);
+                        } else {
                             continue;
                         }
-                        printf("Keepalive in loop.\n");
-                        sleep(20);
+                    }
+                } else {
+                    printf("Retrying...\n");
+                    sleep(3);
+                };
+            }
+        }
+    } else if (strcmp(mode, "pppoe") == 0) {
+        int pppoe_counter = 0;
+        int keepalive_counter = 0;
+        unsigned char seed[4], sip[4];  /* pppoe's seed == dhcp's KEEP_ALIVE_VERSION */
+        int login_first = 1;
+        int first = 1;
+        int encrypt_mode = 0;
+        int encrypt_type = 0;
+        int try_counter = 0;
+        while(1) {
+            if (pppoe_challenge(sockfd, dest_addr, &pppoe_counter, seed, sip, &encrypt_mode)) {
+                printf("Retrying...\n");
+                login_first = 1;
+                try_counter++;
+                if (try_counter >= try_times) {
+                    break;
+                }
+                sleep(3);
+                continue;
+            } else {
+                if (pppoe_login(sockfd, dest_addr, &pppoe_counter, seed, sip, &login_first, &encrypt_mode, &encrypt_type)) {
+                    continue;
+                } else {
+                    login_first = 0;
+                    if (keepalive_2(sockfd, dest_addr, &keepalive_counter, &first, &encrypt_type)) {
+                        continue;
                     } else {
+                        if (verbose_flag) {
+                            printf("PPPoE in loop.\n");
+                        }
+                        sleep(10);
                         continue;
                     }
                 }
-            } else {
-                printf("Retrying...\n");
-                sleep(3);
-            };
+            }
         }
     }
+
     printf(">>>>> Failed to keep in touch with server, exiting <<<<<\n\n");
     close(sockfd);
     return 1;

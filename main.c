@@ -5,7 +5,7 @@
 #include "configparse.h"
 #include "auth.h"
 
-#define VERSION "0.6.0"
+#define VERSION "0.8.0"
 
 void print_help(int exval);
 
@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 'c':
-                // printf("configuration file path: %s\n", optarg);
                 if (mode != NULL) {
                     file_path = optarg;
                 };
@@ -55,8 +54,6 @@ int main(int argc, char *argv[]) {
                 break;
             case 'v':
                 verbose_flag = 1;
-                // printf("Verbose mode ON\n");
-                // printf("%d\n", verbose_flag);
                 break;
             case 'h':
                 print_help(0);
@@ -68,15 +65,15 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    
+
     if (mode != NULL && file_path != NULL) {
         if (!config_parse(file_path, mode)) {
-            dogcom(5);
+            dogcom(5, mode);
         } else {
             return 1;
         }
     } else {
-        printf("Need more options!");
+        printf("Need more options!\n\n");
         return 1;
     }
     return 0;
@@ -94,5 +91,5 @@ void print_help(int exval) {
     printf("\t--conf <FILEPATH>, -c <FILEPATH>      import configuration file\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
     printf("\t--verbose, -v                         set verbose flag\n");
-    printf("\t--help, -h                            display this help\n");
+    printf("\t--help, -h                            display this help\n\n");
 }
