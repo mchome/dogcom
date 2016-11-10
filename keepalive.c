@@ -31,6 +31,9 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
     if (verbose_flag) {
         print_packet("[Keepalive1 sent] ", keepalive_1_packet, 42);
     }
+    if (logging_flag) {
+        logging("[Keepalive1 sent] ", keepalive_1_packet, 42);
+    }
 
 #ifdef TEST
     printf("[TEST MODE]IN TEST MODE, PASS\n");
@@ -49,6 +52,9 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
 
     if (verbose_flag) {
         print_packet("[Keepalive1 recv] ", recv_packet, sizeof(recv_packet));
+    }
+    if (logging_flag) {
+        logging("[Keepalive1 recv] ", recv_packet, sizeof(recv_packet));
     }
 
     return 0;
@@ -150,12 +156,18 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
         if (verbose_flag) {
             print_packet("[Keepalive2_file sent] ", keepalive_2_packet, 40);
         }
+        if (logging_flag) {
+            logging("[Keepalive2_file sent] ", keepalive_2_packet, 40);
+        }
         if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
             perror("Failed to recv data");
             return 1;
         }
         if (verbose_flag) {
-            print_packet("[Keepalive2_B recv] ", recv_packet, sizeof(recv_packet));
+            print_packet("[Keepalive2_file recv] ", recv_packet, sizeof(recv_packet));
+        }
+        if (logging_flag) {
+            logging("[Keepalive2_file recv] ", recv_packet, sizeof(recv_packet));
         }
 
         if (recv_packet[0] == 0x07) {
@@ -186,6 +198,9 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     if (verbose_flag) {
         print_packet("[Keepalive2_A sent] ", keepalive_2_packet, 40);
     }
+    if (logging_flag) {
+        logging("[Keepalive2_A sent] ", keepalive_2_packet, 40);
+    }
 
 #ifdef TEST
     unsigned char test[4] = {0x13, 0x38, 0xe2, 0x11};
@@ -198,6 +213,9 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     }
     if (verbose_flag) {
         print_packet("[Keepalive2_B recv] ", recv_packet, sizeof(recv_packet));
+    }
+    if (logging_flag) {
+        logging("[Keepalive2_B recv] ", recv_packet, sizeof(recv_packet));
     }
 
     if (recv_packet[0] == 0x07) {
@@ -230,6 +248,9 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     if (verbose_flag) {
         print_packet("[Keepalive2_C sent] ", keepalive_2_packet, 40);
     }
+    if (logging_flag) {
+        logging("[Keepalive2_C sent] ", keepalive_2_packet, 40);
+    }
 
 #ifdef TEST
     printf("[TEST MODE]IN TEST MODE, PASS\n");
@@ -242,6 +263,9 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     }
     if (verbose_flag) {
         print_packet("[Keepalive2_D recv] ", recv_packet, sizeof(recv_packet));
+    }
+    if (logging_flag) {
+        logging("[Keepalive2_D recv] ", recv_packet, sizeof(recv_packet));
     }
 
     if (recv_packet[0] == 0x07) {

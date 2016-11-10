@@ -5,7 +5,7 @@
 #include "configparse.h"
 #include "auth.h"
 
-#define VERSION "0.8.0"
+#define VERSION "1.0.0"
 
 void print_help(int exval);
 
@@ -50,7 +50,10 @@ int main(int argc, char *argv[]) {
                 };
                 break;
             case 'l':
-                printf("log file path: %s\n", optarg);
+                if (mode != NULL) {
+                    log_path = optarg;
+                    logging_flag = 1;
+                }
                 break;
             case 'v':
                 verbose_flag = 1;

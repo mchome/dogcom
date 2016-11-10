@@ -15,18 +15,13 @@ Options:
 
 Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-generic).
 
-example:
+#### Example:
 
     $ dogcom -m dhcp -c dogcom.conf
 
-to build:
+#### To build:
 
     $ make
-
-todo:
-- [x] DHCP Version
-- [x] PPPoE Version
-- [ ] Logging function
 
 ### Thanks:
 - [gdut-drcom](https://github.com/chenhaowen01/gdut-drcom 'chenhaowen01')

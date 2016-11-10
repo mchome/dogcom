@@ -9,5 +9,6 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
 int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigned char seed[], unsigned char sip[], int *first, int *encrypt_mode, int *encrypt_type);
 int dogcom(int try_times, char *mode);
 void print_packet(char msg[10], unsigned char *packet, int length);
+void logging(char msg[10], unsigned char *packet, int length);
 
 #endif // AUTH_H_

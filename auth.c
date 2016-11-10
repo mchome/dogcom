@@ -32,6 +32,9 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
     if (verbose_flag) {
         print_packet("[Challenge sent] ", challenge_packet, 20);
     }
+    if (logging_flag) {
+        logging("[Challenge sent] ", challenge_packet, 20);
+    }
 #ifdef TEST
     unsigned char test[4] = {0x52, 0x6c, 0xe4, 0x00};
     memcpy(seed, test, 4);
@@ -51,6 +54,9 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
 
     if (verbose_flag) {
         print_packet("[Challenge recv] ", recv_packet, 76);
+    }
+    if (logging_flag) {
+        logging("[Challenge recv] ", recv_packet, 76);
     }
 
     memcpy(seed, &recv_packet[4], 4 * sizeof(*recv_packet));
@@ -197,6 +203,9 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     if (verbose_flag) {
         print_packet("[Login sent] ", login_packet, sizeof(login_packet));
     }
+    if (logging_flag) {
+        logging("[Login sent] ", login_packet, sizeof(login_packet));
+    }
 
 #ifdef TEST
     unsigned char test[16] = {0x44, 0x72, 0x63, 0x6f, 0x77, 0x27, 0x20, 0xca, 0xed, 0x05, 0x6e, 0x35, 0xaa, 0x8b, 0x01, 0xfb};
@@ -218,6 +227,10 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     if (verbose_flag) {
         print_packet("[login recv] ", recv_packet, sizeof(recv_packet));
         printf("<<< Loged in >>>\n");
+    }
+    if (logging_flag) {
+        logging("[login recv] ", recv_packet, sizeof(recv_packet));
+        logging("<<< Loged in >>>", NULL, 0);
     }
 
     memcpy(auth_information, &recv_packet[23], 16);
@@ -244,6 +257,9 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
 
     if (verbose_flag) {
         print_packet("[Challenge sent] ", challenge_packet, 8);
+    }
+    if (logging_flag) {
+        logging("[Challenge sent] ", challenge_packet, 8);
     }
 #ifdef TEST
     unsigned char test1[4] = {0x26, 0xe6, 0xe1, 0x02};
@@ -274,6 +290,9 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
 
     if (verbose_flag) {
         print_packet("[Challenge recv] ", recv_packet, 32);
+    }
+    if (logging_flag) {
+        logging("[Challenge recv] ", recv_packet, 32);
     }
 
     memcpy(seed, &recv_packet[8], 4);
@@ -343,6 +362,9 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     if (verbose_flag) {
         print_packet("[PPPoE_login sent] ", login_packet, 96);
     }
+    if (logging_flag) {
+        logging("[PPPoE_login sent] ", login_packet, 96);
+    }
 #ifdef TEST
     return 0;
 #endif
@@ -360,7 +382,9 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     if (verbose_flag) {
         print_packet("[PPPoE_login recv] ", recv_packet, 48);
     }
-
+    if (logging_flag) {
+        logging("[PPPoE_login recv] ", recv_packet, 48);
+    }
 
     if(recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
         DEBUG_PRINT(("Get notice packet."));
@@ -413,6 +437,9 @@ int dogcom(int try_times, char *mode) {
             unsigned char auth_information[16];
             if (challenge(sockfd, dest_addr, seed)) {
                 printf("Retrying...\n");
+                if (logging_flag) {
+                    logging("Retrying...", NULL, 0);
+                }
                 sleep(3);
             } else {
                 if (!login(sockfd, dest_addr, seed, auth_information)) {
@@ -426,6 +453,9 @@ int dogcom(int try_times, char *mode) {
                             if (verbose_flag) {
                                 printf("Keepalive in loop.\n");
                             }
+                            if (logging_flag) {
+                                logging("Keepalive in loop.", NULL, 0);
+                            }
                             sleep(20);
                         } else {
                             continue;
@@ -433,6 +463,9 @@ int dogcom(int try_times, char *mode) {
                     }
                 } else {
                     printf("Retrying...\n");
+                    if (logging_flag) {
+                        logging("Retrying...", NULL, 0);
+                    }
                     sleep(3);
                 };
             }
@@ -449,6 +482,9 @@ int dogcom(int try_times, char *mode) {
         while(1) {
             if (pppoe_challenge(sockfd, dest_addr, &pppoe_counter, seed, sip, &encrypt_mode)) {
                 printf("Retrying...\n");
+                if (logging_flag) {
+                    logging("Retrying...", NULL, 0);
+                }
                 login_first = 1;
                 try_counter++;
                 if (try_counter >= try_times) {
@@ -467,6 +503,9 @@ int dogcom(int try_times, char *mode) {
                         if (verbose_flag) {
                             printf("PPPoE in loop.\n");
                         }
+                        if (logging_flag) {
+                            logging("PPPoE in loop.", NULL, 0);
+                        }
                         sleep(10);
                         continue;
                     }
@@ -476,6 +515,9 @@ int dogcom(int try_times, char *mode) {
     }
 
     printf(">>>>> Failed to keep in touch with server, exiting <<<<<\n\n");
+    if (logging_flag) {
+        logging(">>>>> Failed to keep in touch with server, exiting <<<<<", NULL, 0);
+    }
     close(sockfd);
     return 1;
 }
@@ -487,4 +529,24 @@ void print_packet(char msg[10], unsigned char *packet, int length) {
         printf("%02x", packet[i]);
     }
     printf("\n");
+}
+
+void logging(char msg[10], unsigned char *packet, int length) {
+    FILE *ptr_file;
+    ptr_file = fopen(log_path, "a");
+
+    char *wday[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    time_t timep;
+    struct tm *p;
+    time(&timep);
+    p = localtime(&timep);
+    fprintf(ptr_file, "[%d/%d/%d %s %d:%d:%d] ", (1900+p->tm_year), (1+p->tm_mon), p->tm_mday, wday[p->tm_wday], p->tm_hour, p->tm_min, p->tm_sec);    
+
+    fprintf(ptr_file, "%s", msg);
+    for (int i = 0; i < length; i++) {
+        fprintf(ptr_file, "%02x", packet[i]);
+    }
+    fprintf(ptr_file, "\n");
+
+    fclose(ptr_file);
 }

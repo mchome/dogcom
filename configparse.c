@@ -5,6 +5,8 @@
 #include "debug.h"
 
 int verbose_flag = 0;
+int logging_flag = 0;
+char *log_path;
 char *mode;
 struct config drcom_config;
 
