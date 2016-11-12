@@ -540,7 +540,8 @@ void logging(char msg[10], unsigned char *packet, int length) {
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    fprintf(ptr_file, "[%d/%d/%d %s %d:%d:%d] ", (1900+p->tm_year), (1+p->tm_mon), p->tm_mday, wday[p->tm_wday], p->tm_hour, p->tm_min, p->tm_sec);    
+    fprintf(ptr_file, "[%04d/%02d/%02d %s %02d:%02d:%02d] ",
+            (1900 + p -> tm_year), (1 + p -> tm_mon), p -> tm_mday, wday[p -> tm_wday], p -> tm_hour, p -> tm_min, p -> tm_sec);    
 
     fprintf(ptr_file, "%s", msg);
     for (int i = 0; i < length; i++) {
