@@ -3,9 +3,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+
+#ifdef WIN32
+    #include <winsock2.h>
+    typedef int socklen_t;
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+#endif
+
 #include "libs/md4.h"
 #include "libs/md5.h"
 #include "libs/sha1.h"
@@ -28,7 +35,7 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
     challenge_packet[4] = drcom_config.AUTH_VERSION[0];
 
     sendto(sockfd, challenge_packet, 20, 0, (struct sockaddr *)&addr, sizeof(addr));
-    
+
     if (verbose_flag) {
         print_packet("[Challenge sent] ", challenge_packet, 20);
     }
@@ -95,8 +102,8 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     memcpy(login_packet + 20, drcom_config.username, strlen(drcom_config.username));
     memcpy(login_packet + 56, &drcom_config.CONTROLCHECKSTATUS, 1);
     memcpy(login_packet + 57, &drcom_config.ADAPTERNUM, 1);
-    unsigned long int sum = 0;
-    unsigned long int mac = 0;
+    uint64_t sum = 0;
+    uint64_t mac = 0;
     // unpack
     for (int i = 0; i < 6; i++) {
         sum = (int)MD5A[i] + sum * 256;
@@ -105,6 +112,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     for (int i = 0; i < 6; i++) {
         mac = (int)drcom_config.mac[i] + mac * 256;
     }
+    printf("%ld\n", mac);
     sum ^= mac;
     // pack
     for (int i = 6; i > 0; i--) {
@@ -180,7 +188,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     memcpy(checksum2_str + counter + 2, checksum2_tmp, 6);
     memcpy(checksum2_str + counter + 8, drcom_config.mac, 6);
     sum = 1234;
-    unsigned long int ret = 0;
+    uint64_t ret = 0;
     for (int i = 0; i < counter + 14; i += 4) {
         ret = 0;
         // reverse unsigned char array[4]
@@ -331,8 +339,8 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     unsigned char crc_tmp[32] = {0};
     memcpy(crc_tmp, login_packet, 32);
     memcpy(crc_tmp + 24, crc, 8);
-    unsigned long int ret = 0;
-    unsigned long int sum = 0;
+    uint64_t ret = 0;
+    uint64_t sum = 0;
     unsigned char crc2[4] = {0};
     if (*encrypt_type == 0) {
         for (int i = 0; i < 32; i += 4) {
@@ -394,18 +402,33 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
 }
 
 int dogcom(int try_times, char *mode) {
+#ifdef WIN32
+    WORD sockVersion = MAKEWORD(2, 2);
+    WSADATA wsaData;
+    if(WSAStartup(sockVersion, &wsaData) != 0) {
+        return 1;
+    }
+#endif
     int sockfd;
 
     struct sockaddr_in bind_addr;
     memset(&bind_addr, 0, sizeof(bind_addr));
     bind_addr.sin_family = AF_INET;
+#ifdef WIN32
+    bind_addr.sin_addr.S_un.S_addr = inet_addr(BIND_IP);
+#else
     bind_addr.sin_addr.s_addr = inet_addr(BIND_IP);
+#endif
     bind_addr.sin_port = htons(BIND_PORT);
 
     struct sockaddr_in dest_addr;
     memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
+#ifdef WIN32
+    dest_addr.sin_addr.S_un.S_addr = inet_addr(drcom_config.server);
+#else
     dest_addr.sin_addr.s_addr = inet_addr(drcom_config.server);
+#endif
     dest_addr.sin_port = htons(DEST_PORT);
 
     srand(time(NULL));
@@ -422,9 +445,13 @@ int dogcom(int try_times, char *mode) {
     }
 
     // set timeout
+#ifdef WIN32
+    int timeout = 3000;
+#else
     struct timeval timeout;
     timeout.tv_sec = 3;
     timeout.tv_usec = 0;
+#endif
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
         perror("Failed to set sock opt");
         return 1;
@@ -518,7 +545,12 @@ int dogcom(int try_times, char *mode) {
     if (logging_flag) {
         logging(">>>>> Failed to keep in touch with server, exiting <<<<<", NULL, 0);
     }
+#ifdef WIN32
+    closesocket(sockfd);
+    WSACleanup();
+#else
     close(sockfd);
+#endif
     return 1;
 }
 

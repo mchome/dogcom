@@ -5,7 +5,7 @@
 #include "configparse.h"
 #include "auth.h"
 
-#define VERSION "1.0.1"
+#define VERSION "1.1.0"
 
 void print_help(int exval);
 
@@ -36,9 +36,9 @@ int main(int argc, char *argv[]) {
         switch (c) {
             case 'm':
                 if (strcmp(optarg, "dhcp") == 0) {
-                    mode = optarg;
+                    mode = strdup(optarg);
                 } else if (strcmp(optarg, "pppoe") == 0) {
-                    mode = optarg;
+                    mode = strdup(optarg);
                 } else {
                     printf("unknown mode\n");
                     exit(1);
@@ -95,4 +95,5 @@ void print_help(int exval) {
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
     printf("\t--verbose, -v                         set verbose flag\n");
     printf("\t--help, -h                            display this help\n\n");
+    exit(exval);
 }

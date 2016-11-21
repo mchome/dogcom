@@ -1,7 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/socket.h>
+
+#ifdef WIN32
+    #include <winsock2.h>
+    typedef int socklen_t;
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+#endif
+
 #include "libs/md4.h"
 #include "libs/md5.h"
 #include "libs/sha1.h"

@@ -2,6 +2,9 @@ CC     = gcc
 ifeq ($(debug), y)
 	CFLAGS += -std=gnu99 -Werror -DDEBUG -g
 endif
+ifeq ($(win32), y)
+	CFLAGS += -std=gnu99 -Werror -lws2_32
+endif
 ifeq ($(test), y)
 	CFLAGS += -std=gnu99 -Werror -DTEST
 else

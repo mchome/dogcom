@@ -21,7 +21,10 @@ Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-g
 
 #### To build:
 
-    $ make
+```bash
+    $ make # Linux
+    $ make win32=y # Windows(MinGW)
+```
 
 ### Thanks:
 - [gdut-drcom](https://github.com/chenhaowen01/gdut-drcom 'chenhaowen01')
