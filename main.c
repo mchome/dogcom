@@ -5,7 +5,7 @@
 #include "configparse.h"
 #include "auth.h"
 
-#define VERSION "1.1.0"
+#define VERSION "1.1.1"
 
 void print_help(int exval);
 

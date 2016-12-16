@@ -143,7 +143,7 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
 }
 
 int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int *first, int *encrypt_type) {
-    unsigned char keepalive_2_packet[40], recv_packet[40], tail[4];
+    unsigned char keepalive_2_packet[40], recv_packet[1024], tail[4];
     socklen_t addrlen = sizeof(addr);
 
 #ifdef TEST

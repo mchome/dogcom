@@ -207,7 +207,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     login_packet[counter + 17] = 0x13;
 
     sendto(sockfd, login_packet, sizeof(login_packet), 0, (struct sockaddr *)&addr, sizeof(addr));
-    
+
     if (verbose_flag) {
         print_packet("[Login sent] ", login_packet, sizeof(login_packet));
     }
