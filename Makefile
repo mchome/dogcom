@@ -1,17 +1,19 @@
 CC     = gcc
+TARGET = dogcom
+INSTALL_DIR = /usr/bin/
+
 ifeq ($(debug), y)
 	CFLAGS += -std=gnu99 -Werror -DDEBUG -g
 endif
 ifeq ($(win32), y)
 	CFLAGS += -std=gnu99 -Werror -lws2_32
+	TARGET = dogcom-MinGW
 endif
 ifeq ($(test), y)
 	CFLAGS += -std=gnu99 -Werror -DTEST
 else
 	CFLAGS += -std=gnu99 -Werror
 endif
-TARGET = dogcom
-INSTALL_DIR = /usr/bin/
 
 SOURCES = $(wildcard *.c) $(wildcard libs/*.c)
 OBJS    = $(patsubst %.c, %.o, $(SOURCES))

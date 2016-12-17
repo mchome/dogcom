@@ -26,7 +26,7 @@
 #define DEST_PORT 61440
 
 int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
-    unsigned char challenge_packet[20], recv_packet[76];
+    unsigned char challenge_packet[20], recv_packet[1024];
     memset(challenge_packet, 0, 20);
     challenge_packet[0] = 0x01;
     challenge_packet[1] = 0x02;
@@ -82,7 +82,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     } else {
         login_packet_size = 330;
     }
-    unsigned char login_packet[login_packet_size], recv_packet[100], MD5A[16], MACxorMD5A[6], MD5B[16], checksum1[8], checksum2[4];
+    unsigned char login_packet[login_packet_size], recv_packet[1024], MD5A[16], MACxorMD5A[6], MD5B[16], checksum1[8], checksum2[4];
     memset(login_packet, 0, login_packet_size);
     memset(recv_packet, 0, 100);
 
@@ -112,7 +112,6 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     for (int i = 0; i < 6; i++) {
         mac = (int)drcom_config.mac[i] + mac * 256;
     }
-    printf("%ld\n", mac);
     sum ^= mac;
     // pack
     for (int i = 6; i > 0; i--) {
@@ -233,11 +232,11 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     }
 
     if (verbose_flag) {
-        print_packet("[login recv] ", recv_packet, sizeof(recv_packet));
+        print_packet("[login recv] ", recv_packet, 100);
         printf("<<< Loged in >>>\n");
     }
     if (logging_flag) {
-        logging("[login recv] ", recv_packet, sizeof(recv_packet));
+        logging("[login recv] ", recv_packet, 100);
         logging("<<< Loged in >>>", NULL, 0);
     }
 
@@ -254,7 +253,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
 }
 
 int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigned char seed[], unsigned char sip[], int *encrypt_mode) {
-    unsigned char challenge_packet[8], recv_packet[32];
+    unsigned char challenge_packet[8], recv_packet[1024];
     memset(challenge_packet, 0, 8);
     unsigned char challenge_tmp[5] = {0x07, 0x00, 0x08, 0x00, 0x01};
     memcpy(challenge_packet, challenge_tmp, 5);
@@ -316,7 +315,7 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
 }
 
 int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigned char seed[], unsigned char sip[], int *login_first, int *encrypt_mode, int *encrypt_type) {
-    unsigned char login_packet[96], recv_packet[48];
+    unsigned char login_packet[96], recv_packet[1024];
     memset(login_packet, 0, 96);
     unsigned char login_tmp[5] = {0x07, 0x00, 0x60, 0x00, 0x03};
     memcpy(login_packet, login_tmp, 5);
@@ -469,11 +468,13 @@ int dogcom(int try_times, char *mode) {
                 }
                 sleep(3);
             } else {
+                sleep(0.1);
                 if (!login(sockfd, dest_addr, seed, auth_information)) {
                     int keepalive_counter = 0;
                     int first = 1;
                     while (1) {
                         if (!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
+                            sleep(0.1);
                             if (keepalive_2(sockfd, dest_addr, &keepalive_counter, &first, 0)) {
                                 continue;
                             }

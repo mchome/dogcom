@@ -5,7 +5,12 @@
 #include "configparse.h"
 #include "auth.h"
 
-#define VERSION "1.1.1"
+#ifndef WIN32
+#include <linux/limits.h>
+#include "daemon.h"
+#endif
+
+#define VERSION "1.2.0"
 
 void print_help(int exval);
 
@@ -21,6 +26,9 @@ int main(int argc, char *argv[]) {
             { "mode", required_argument, 0, 'm' },
             { "conf", required_argument, 0, 'c' },
             { "log", required_argument, 0, 'l' },
+#ifndef WIN32
+            { "daemon", no_argument, 0, 'd' },
+#endif
             { "verbose", no_argument, 0, 'v' },
             { "help", no_argument, 0, 'h' },
             { 0, 0, 0, 0 }
@@ -28,7 +36,11 @@ int main(int argc, char *argv[]) {
 
         int c;
         int option_index = 0;
+#ifdef WIN32
         c = getopt_long(argc, argv, "m:c:l:vh", long_options, &option_index);
+#else
+        c = getopt_long(argc, argv, "m:c:l:dvh", long_options, &option_index);
+#endif
         
         if (c == -1) {
             break;
@@ -46,15 +58,32 @@ int main(int argc, char *argv[]) {
                 break;
             case 'c':
                 if (mode != NULL) {
+#ifdef WIN32
                     file_path = optarg;
-                };
+#else
+                    char path_c[PATH_MAX];
+                    realpath(optarg, path_c);
+                    file_path = strdup(path_c);
+#endif
+                }
                 break;
             case 'l':
                 if (mode != NULL) {
+#ifdef WIN32
                     log_path = optarg;
+#else
+                    char path_l[PATH_MAX];
+                    realpath(optarg, path_l);
+                    log_path = strdup(path_l);
+#endif
                     logging_flag = 1;
                 }
                 break;
+#ifndef WIN32
+            case 'd':
+                daemon_flag = 1;
+                break;
+#endif
             case 'v':
                 verbose_flag = 1;
                 break;
@@ -70,6 +99,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (mode != NULL && file_path != NULL) {
+#ifndef WIN32
+        if (daemon_flag) {
+            daemonise();
+        }
+#endif
         if (!config_parse(file_path, mode)) {
             dogcom(5, mode);
         } else {
@@ -93,6 +127,9 @@ void print_help(int exval) {
     printf("\t--mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode \n");
     printf("\t--conf <FILEPATH>, -c <FILEPATH>      import configuration file\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
+#ifndef WIN32
+    printf("\t--daemon, -d                          set daemon flag\n");
+#endif
     printf("\t--verbose, -v                         set verbose flag\n");
     printf("\t--help, -h                            display this help\n\n");
     exit(exval);

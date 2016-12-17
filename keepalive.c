@@ -19,7 +19,7 @@
 #include "debug.h"
 
 int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]) {
-    unsigned char keepalive_1_packet[42], recv_packet[100], MD5A[16];
+    unsigned char keepalive_1_packet[42], recv_packet[1024], MD5A[16];
     memset(keepalive_1_packet, 0, 42);
     keepalive_1_packet[0] = 0xff;
     int MD5A_len = 6 + strlen(drcom_config.password);
@@ -59,10 +59,10 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
     }
 
     if (verbose_flag) {
-        print_packet("[Keepalive1 recv] ", recv_packet, sizeof(recv_packet));
+        print_packet("[Keepalive1 recv] ", recv_packet, 100);
     }
     if (logging_flag) {
-        logging("[Keepalive1 recv] ", recv_packet, sizeof(recv_packet));
+        logging("[Keepalive1 recv] ", recv_packet, 100);
     }
 
     return 0;
@@ -172,17 +172,21 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
             return 1;
         }
         if (verbose_flag) {
-            print_packet("[Keepalive2_file recv] ", recv_packet, sizeof(recv_packet));
+            print_packet("[Keepalive2_file recv] ", recv_packet, 40);
         }
         if (logging_flag) {
-            logging("[Keepalive2_file recv] ", recv_packet, sizeof(recv_packet));
+            logging("[Keepalive2_file recv] ", recv_packet, 40);
         }
 
         if (recv_packet[0] == 0x07) {
             if (recv_packet[2] == 0x10) {
-                printf("Filepacket received.\n");
+                if (verbose_flag) {
+                    printf("Filepacket received.\n");
+                }
             } else if (recv_packet[2] != 0x28) {
-                printf("Bad keepalive2 response received.\n");
+                if (verbose_flag) {
+                    printf("Bad keepalive2 response received.\n");
+                }
                 return 1;
             }
         } else {
@@ -220,10 +224,10 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
         return 1;
     }
     if (verbose_flag) {
-        print_packet("[Keepalive2_B recv] ", recv_packet, sizeof(recv_packet));
+        print_packet("[Keepalive2_B recv] ", recv_packet, 40);
     }
     if (logging_flag) {
-        logging("[Keepalive2_B recv] ", recv_packet, sizeof(recv_packet));
+        logging("[Keepalive2_B recv] ", recv_packet, 40);
     }
 
     if (recv_packet[0] == 0x07) {
@@ -270,10 +274,10 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
         return 1;
     }
     if (verbose_flag) {
-        print_packet("[Keepalive2_D recv] ", recv_packet, sizeof(recv_packet));
+        print_packet("[Keepalive2_D recv] ", recv_packet, 40);
     }
     if (logging_flag) {
-        logging("[Keepalive2_D recv] ", recv_packet, sizeof(recv_packet));
+        logging("[Keepalive2_D recv] ", recv_packet, 40);
     }
 
     if (recv_packet[0] == 0x07) {

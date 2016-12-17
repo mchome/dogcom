@@ -1,4 +1,4 @@
-# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status")
+# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status") ![badge](https://img.shields.io/badge/built%20with-%20%E2%9D%A4-ff69b4.svg)
 [Drcom-generic](https://github.com/drcoms/drcom-generic) implementation in C.
 
 ```

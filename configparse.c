@@ -30,7 +30,9 @@ int config_parse(char *filepath, char *mode) {
             read_p_config(buf, sizeof(buf));
         }
     }
-    printf("\n\n");
+    if (verbose_flag) {
+        printf("\n\n");
+    }
     fclose(ptr_file);
 
     return 0;
