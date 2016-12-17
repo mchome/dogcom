@@ -9,6 +9,7 @@ Options:
         --mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode
         --conf <FILEPATH>, -c <FILEPATH>      import configuration file
         --log <LOGPATH>, -l <LOGPATH>         specify log file
+        --daemon, -d                          set daemon flag
         --verbose, -v                         set verbose flag
         --help, -h                            display this help
 ```
@@ -18,6 +19,8 @@ Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-g
 #### Example:
 
     $ dogcom -m dhcp -c dogcom.conf
+    $ dogcom -m dhcp -c dogcom.conf -l /tmp/dogcom.log -v
+    $ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
 
 #### To build:
 
