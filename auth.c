@@ -192,6 +192,9 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         ret = 0;
         // reverse unsigned char array[4]
         for(int j = 4; j > 0; j--) {
+            if (i + j - 1 >= counter + 14) {
+                checksum2_str[i + j - 1] = 0;
+            }
             ret = ret * 256 + (int)checksum2_str[i + j - 1];
         }
         sum ^= ret;
