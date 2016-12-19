@@ -18,9 +18,11 @@ Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-g
 
 #### Example:
 
-    $ dogcom -m dhcp -c dogcom.conf
-    $ dogcom -m dhcp -c dogcom.conf -l /tmp/dogcom.log -v
-    $ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
+```bash
+$ dogcom -m dhcp -c dogcom.conf
+$ dogcom -m dhcp -c dogcom.conf -l /tmp/dogcom.log -v
+$ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
+```
 
 #### To build:
 
@@ -28,6 +30,10 @@ Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-g
 $ make # Linux
 $ make win32=y # Windows(MinGW)
 ```
+
+<div>
+    <script type="text/javascript" src="https://asciinema.org/a/9j7cj1s61jiczx2s0206tosjr.js" id="asciicast-9j7cj1s61jiczx2s0206tosjr" async></script>
+</div>
 
 ### Thanks:
 - [gdut-drcom](https://github.com/chenhaowen01/gdut-drcom 'chenhaowen01')
