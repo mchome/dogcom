@@ -31,9 +31,7 @@ $ make # Linux
 $ make win32=y # Windows(MinGW)
 ```
 
-<div>
-    <script type="text/javascript" src="https://asciinema.org/a/9j7cj1s61jiczx2s0206tosjr.js" id="asciicast-9j7cj1s61jiczx2s0206tosjr" async></script>
-</div>
+[![asciicast](https://asciinema.org/a/9j7cj1s61jiczx2s0206tosjr.png)](https://asciinema.org/a/9j7cj1s61jiczx2s0206tosjr)
 
 ### Thanks:
 - [gdut-drcom](https://github.com/chenhaowen01/gdut-drcom 'chenhaowen01')
