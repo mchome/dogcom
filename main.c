@@ -6,11 +6,11 @@
 #include "auth.h"
 
 #ifndef WIN32
-#include <linux/limits.h>
+#include <limits.h>
 #include "daemon.h"
 #endif
 
-#define VERSION "1.2.1"
+#define VERSION "1.2.2"
 
 void print_help(int exval);
 

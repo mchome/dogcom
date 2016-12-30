@@ -1,4 +1,4 @@
-# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status") ![badge](https://img.shields.io/badge/built%20with-%20%E2%9D%A4-ff69b4.svg)
+# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status") ![badge](https://img.shields.io/badge/built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")
 [Drcom-generic](https://github.com/drcoms/drcom-generic) implementation in C.
 
 ```
@@ -31,6 +31,10 @@ $ make # Linux
 $ make win32=y # Windows(MinGW)
 ```
 
+#### Openwrt-package
+[https://github.com/mchome/openwrt-dogcom](https://github.com/mchome/openwrt-dogcom)
+
+#### Tutorial
 [![asciicast](https://asciinema.org/a/9j7cj1s61jiczx2s0206tosjr.png)](https://asciinema.org/a/9j7cj1s61jiczx2s0206tosjr)
 
 ### Thanks:

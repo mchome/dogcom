@@ -181,7 +181,8 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     }
     login_packet[counter] = 0x02;
     login_packet[counter + 1] = 0x0c;
-    unsigned char checksum2_str[counter + 14];
+    unsigned char checksum2_str[counter + 18]; // [counter + 14 + 4]
+    memset(checksum2_str, 0, counter + 18);
     unsigned char checksum2_tmp[6] = {0x01, 0x26, 0x07, 0x11};
     memcpy(checksum2_str, login_packet, counter + 2);
     memcpy(checksum2_str + counter + 2, checksum2_tmp, 6);
@@ -192,9 +193,6 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         ret = 0;
         // reverse unsigned char array[4]
         for(int j = 4; j > 0; j--) {
-            if (i + j - 1 >= counter + 14) {
-                checksum2_str[i + j - 1] = 0;
-            }
             ret = ret * 256 + (int)checksum2_str[i + j - 1];
         }
         sum ^= ret;
