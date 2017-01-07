@@ -7,13 +7,13 @@
 int verbose_flag = 0;
 int logging_flag = 0;
 char *log_path;
-char *mode;
+char mode[10];
 struct config drcom_config;
 
 static int read_d_config(char *buf, int size);
 static int read_p_config(char *buf, int size);
 
-int config_parse(char *filepath, char *mode) {
+int config_parse(char *filepath) {
     FILE *ptr_file;
     char buf[100];
 

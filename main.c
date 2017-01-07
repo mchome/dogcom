@@ -10,7 +10,7 @@
 #include "daemon.h"
 #endif
 
-#define VERSION "1.2.2"
+#define VERSION "1.2.3"
 
 void print_help(int exval);
 
@@ -48,9 +48,9 @@ int main(int argc, char *argv[]) {
         switch (c) {
             case 'm':
                 if (strcmp(optarg, "dhcp") == 0) {
-                    mode = strdup(optarg);
+                    strcpy(mode, optarg);
                 } else if (strcmp(optarg, "pppoe") == 0) {
-                    mode = strdup(optarg);
+                    strcpy(mode, optarg);
                 } else {
                     printf("unknown mode\n");
                     exit(1);
@@ -104,8 +104,16 @@ int main(int argc, char *argv[]) {
             daemonise();
         }
 #endif
-        if (!config_parse(file_path, mode)) {
-            dogcom(5, mode);
+
+#ifdef WIN32 // dirty fix with win32
+        char tmp[10] = {0};
+        strcpy(tmp, mode);
+#endif
+        if (!config_parse(file_path)) {
+#ifdef WIN32 // dirty fix with win32
+            strcpy(mode, tmp);
+#endif
+            dogcom(5);
         } else {
             return 1;
         }

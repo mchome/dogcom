@@ -25,8 +25,8 @@ extern struct config drcom_config;
 extern int verbose_flag;
 extern int logging_flag;
 extern char *log_path;
-extern char *mode;
+extern char mode[10];
 
-int config_parse(char *filepath, char *mode);
+int config_parse(char *filepath);
 
 #endif // CONFIGPARSE_H_

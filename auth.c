@@ -296,6 +296,10 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
         *encrypt_mode = 0;
     }
 
+#ifdef FORCE_ENCRYPT
+    *encrypt_mode = 1;
+#endif
+
     if (verbose_flag) {
         print_packet("[Challenge recv] ", recv_packet, 32);
     }
@@ -360,11 +364,11 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     } else {
         memcpy(login_packet + 24, crc, 8);
     }
-    login_packet[39] = 0x8b;
-    memcpy(login_packet + 40, sip, 4);
-    unsigned char smask[4] = {0xff, 0xff, 0xff, 0xff};
-    memcpy(login_packet + 44, smask, 4);
-    login_packet[54] = 0x40;
+    // login_packet[39] = 0x8b;
+    // memcpy(login_packet + 40, sip, 4);
+    // unsigned char smask[4] = {0xff, 0xff, 0xff, 0xff};
+    // memcpy(login_packet + 44, smask, 4);
+    // login_packet[54] = 0x40;
 
     sendto(sockfd, login_packet, 96, 0, (struct sockaddr *)&addr, sizeof(addr));
     if (verbose_flag) {
@@ -401,7 +405,7 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     return 0;
 }
 
-int dogcom(int try_times, char *mode) {
+int dogcom(int try_times) {
 #ifdef WIN32
     WORD sockVersion = MAKEWORD(2, 2);
     WSADATA wsaData;
@@ -459,7 +463,7 @@ int dogcom(int try_times, char *mode) {
 
     // start dogcoming
     if (strcmp(mode, "dhcp") == 0) {
-        for(int i = 0; i <= try_times; i++) {
+        for(int i = 0; i < try_times; i++) {
             unsigned char seed[4];
             unsigned char auth_information[16];
             if (challenge(sockfd, dest_addr, seed)) {

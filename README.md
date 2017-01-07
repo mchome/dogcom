@@ -22,6 +22,7 @@ Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-g
 $ dogcom -m dhcp -c dogcom.conf
 $ dogcom -m dhcp -c dogcom.conf -l /tmp/dogcom.log -v
 $ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
+$ dogcom -m pppoe -c dogcom.conf -v
 ```
 
 #### To build:
@@ -29,6 +30,8 @@ $ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
 ```bash
 $ make # Linux
 $ make win32=y # Windows(MinGW)
+$ make test=y # For testing purposes
+$ make force_encrypt=y # Force open encrypt mode in PPPoE version
 ```
 
 #### Openwrt-package

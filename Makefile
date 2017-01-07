@@ -5,10 +5,16 @@ INSTALL_DIR = /usr/bin/
 ifeq ($(debug), y)
 	CFLAGS += -std=gnu99 -Werror -DDEBUG -g
 endif
+
 ifeq ($(win32), y)
 	CFLAGS += -std=gnu99 -Werror -lws2_32
 	TARGET = dogcom-MinGW
 endif
+
+ifeq ($(force_encrypt), y)
+	CFLAGS += -std=gnu99 -Werror -DFORCE_ENCRYPT
+endif
+
 ifeq ($(test), y)
 	CFLAGS += -std=gnu99 -Werror -DTEST
 else
