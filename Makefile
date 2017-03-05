@@ -7,8 +7,11 @@ ifeq ($(debug), y)
 endif
 
 ifeq ($(win32), y)
-	CFLAGS += -std=gnu99 -Werror -lws2_32
+	CFLAGS += -std=gnu99 -Werror -DWINDOWS -DHAVE_REMOTE -I wpcap/include \
+			  -L wpcap/lib -lwpcap -lpacket -l-lws2_32
 	TARGET = dogcom-MinGW
+else
+	CFLAGS += -std=gnu99 -Werror -DLINUX
 endif
 
 ifeq ($(force_encrypt), y)

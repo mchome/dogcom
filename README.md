@@ -9,6 +9,7 @@ Options:
         --mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode
         --conf <FILEPATH>, -c <FILEPATH>      import configuration file
         --log <LOGPATH>, -l <LOGPATH>         specify log file
+        --802.1x, -8                          enable 802.1x
         --daemon, -d                          set daemon flag
         --verbose, -v                         set verbose flag
         --help, -h                            display this help
