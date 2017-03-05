@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include "configparse.h"
 #include "auth.h"
+#include "eapol.h"
 
 #ifndef WIN32
 #include <limits.h>
@@ -26,6 +27,7 @@ int main(int argc, char *argv[]) {
             { "mode", required_argument, 0, 'm' },
             { "conf", required_argument, 0, 'c' },
             { "log", required_argument, 0, 'l' },
+            { "802.1x", required_argument, 0, '8' },
 #ifndef WIN32
             { "daemon", no_argument, 0, 'd' },
 #endif
@@ -39,7 +41,7 @@ int main(int argc, char *argv[]) {
 #ifdef WIN32
         c = getopt_long(argc, argv, "m:c:l:vh", long_options, &option_index);
 #else
-        c = getopt_long(argc, argv, "m:c:l:dvh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:l:8dvh", long_options, &option_index);
 #endif
         
         if (c == -1) {
@@ -87,6 +89,9 @@ int main(int argc, char *argv[]) {
             case 'v':
                 verbose_flag = 1;
                 break;
+            case '8':
+                eapol_flag = 1;
+                break;
             case 'h':
                 print_help(0);
                 break;
@@ -113,6 +118,10 @@ int main(int argc, char *argv[]) {
 #ifdef WIN32 // dirty fix with win32
             strcpy(mode, tmp);
 #endif
+            // eable 802.1x authorization
+            if (eapol_flag) {
+                eaplogin(drcom_config.username, drcom_config.password);
+            }
             dogcom(5);
         } else {
             return 1;
@@ -135,6 +144,7 @@ void print_help(int exval) {
     printf("\t--mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode \n");
     printf("\t--conf <FILEPATH>, -c <FILEPATH>      import configuration file\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
+    printf("\t--802.1x, -8                          enable 802.1x\n");
 #ifndef WIN32
     printf("\t--daemon, -d                          set daemon flag\n");
 #endif
