@@ -234,11 +234,11 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
 
     if (verbose_flag) {
         print_packet("[login recv] ", recv_packet, 100);
-        printf("<<< Loged in >>>\n");
+        printf("<<< Logged in >>>\n");
     }
     if (logging_flag) {
         logging("[login recv] ", recv_packet, 100);
-        logging("<<< Loged in >>>", NULL, 0);
+        logging("<<< Logged in >>>", NULL, 0);
     }
 
     memcpy(auth_information, &recv_packet[23], 16);
