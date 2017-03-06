@@ -5,6 +5,7 @@
 #include "configparse.h"
 #include "auth.h"
 #include "eapol.h"
+#include "common.h"
 
 #ifndef WIN32
 #include <limits.h>
@@ -14,6 +15,7 @@
 #define VERSION "1.2.3"
 
 void print_help(int exval);
+int try_smart_eaplogin(void);
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
@@ -120,7 +122,10 @@ int main(int argc, char *argv[]) {
 #endif
             // eable 802.1x authorization
             if (eapol_flag) {
-                eaplogin(drcom_config.username, drcom_config.password);
+                if (0 != try_smart_eaplogin()) {
+                    printf("Can't finish 802.1x authorization!\n");
+                    return 1;
+                }
             }
             dogcom(5);
         } else {
@@ -151,4 +156,20 @@ void print_help(int exval) {
     printf("\t--verbose, -v                         set verbose flag\n");
     printf("\t--help, -h                            display this help\n\n");
     exit(exval);
+}
+
+int try_smart_eaplogin(void)
+{
+#define IFS_MAX     (64)
+    int ifcnt = IFS_MAX;
+    iflist_t ifs[IFS_MAX];
+    if (0 > getall_ifs(ifs, &ifcnt))
+        return -1;
+
+    for (int i = 0; i < ifcnt; ++i) {
+        setifname(ifs[i].name);
+        if (0 == eaplogin(drcom_config.username, drcom_config.password))
+            return 0;
+    }
+    return -1;
 }
