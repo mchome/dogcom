@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include "common.h"
 
 #ifdef WIN32
     #include <winsock2.h>
@@ -473,13 +474,13 @@ int dogcom(int try_times) {
                 }
                 sleep(3);
             } else {
-                sleep(0.1);
+                msleep(100);
                 if (!login(sockfd, dest_addr, seed, auth_information)) {
                     int keepalive_counter = 0;
                     int first = 1;
                     while (1) {
                         if (!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
-                            sleep(0.1);
+                            msleep(100);
                             if (keepalive_2(sockfd, dest_addr, &keepalive_counter, &first, 0)) {
                                 continue;
                             }
