@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 #ifdef WIN32
-    #include <winsock2.h>
-    typedef int socklen_t;
+# include <winsock2.h>
+typedef int socklen_t;
 #else
-    #include <sys/socket.h>
-    #include <netinet/in.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
 #endif
 
 #include "libs/md4.h"
@@ -48,22 +48,29 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
     return 0;
 #endif
 
-    socklen_t addrlen = sizeof(addr);
-    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
-        perror("Failed to recv data");
-        return 1;
-    }
-    if (recv_packet[0] != 0x07) {
-        printf("Bad keepalive1 response received.\n");
-        return 1;
-    }
+    int try_recv_cnt = 5;
+    while (--try_recv_cnt >= 0) {
+        struct sockaddr_in tmp = addr;
+        socklen_t addrlen = sizeof(tmp);
+        if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&tmp, &addrlen) < 0) {
+            perror("keepalive1 recvfrom");
+            continue;
+        }
+        if (recv_packet[0] != 0x07) {
+            printf("try%d: Bad keepalive1 response received.\n", 5-try_recv_cnt);
+            continue;
+        }
 
-    if (verbose_flag) {
-        print_packet("[Keepalive1 recv] ", recv_packet, 100);
+        if (verbose_flag) {
+            print_packet("[Keepalive1 recv] ", recv_packet, 100);
+        }
+        if (logging_flag) {
+            logging("[Keepalive1 recv] ", recv_packet, 100);
+        }
+        if (recv_packet[0] == 0x07)
+            break;
     }
-    if (logging_flag) {
-        logging("[Keepalive1 recv] ", recv_packet, 100);
-    }
+    if (-1 == try_recv_cnt) return 1;
 
     return 0;
 }
@@ -118,7 +125,7 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
     keepalive_2_packet[4] = 0x0b;
     keepalive_2_packet[5] = type;
     if (filepacket) {
-        keepalive_2_packet[6] = 0x0f; 
+        keepalive_2_packet[6] = 0x0f;
         keepalive_2_packet[7] = 0x27;
     } else {
         memcpy(keepalive_2_packet + 6, drcom_config.KEEP_ALIVE_VERSION, 2);
@@ -129,10 +136,10 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
         unsigned char host_ip[4] = {0};
         if (strcmp(mode, "dhcp") == 0) {
             sscanf(drcom_config.host_ip, "%hhd.%hhd.%hhd.%hhd",
-                &host_ip[0],
-                &host_ip[1],
-                &host_ip[2],
-                &host_ip[3]);
+                    &host_ip[0],
+                    &host_ip[1],
+                    &host_ip[2],
+                    &host_ip[3]);
             memcpy(keepalive_2_packet + 28, host_ip, 4);
         } else if (strcmp(mode, "pppoe") == 0) {
             unsigned char crc[8] = {0};
@@ -144,10 +151,10 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
 
 int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int *first, int *encrypt_type) {
     unsigned char keepalive_2_packet[40], recv_packet[1024], tail[4];
-    socklen_t addrlen = sizeof(addr);
+    int try_recv_cnt;
 
 #ifdef TEST
-        printf("[TEST MODE]IN TEST MODE, PASS\n");
+    printf("[TEST MODE]IN TEST MODE, PASS\n");
 #else
     if (*first) {
         // send the file packet
@@ -167,32 +174,35 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
         if (logging_flag) {
             logging("[Keepalive2_file sent] ", keepalive_2_packet, 40);
         }
-        if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
-            perror("Failed to recv data");
-            return 1;
-        }
-        if (verbose_flag) {
-            print_packet("[Keepalive2_file recv] ", recv_packet, 40);
-        }
-        if (logging_flag) {
-            logging("[Keepalive2_file recv] ", recv_packet, 40);
-        }
 
-        if (recv_packet[0] == 0x07) {
-            if (recv_packet[2] == 0x10) {
-                if (verbose_flag) {
-                    printf("Filepacket received.\n");
-                }
-            } else if (recv_packet[2] != 0x28) {
-                if (verbose_flag) {
-                    printf("Bad keepalive2 response received.\n");
-                }
-                return 1;
+        /* ignore some indifferent packets in `try_recv_cnt`. */
+        try_recv_cnt = 5;
+        while (--try_recv_cnt >= 0) {
+            struct sockaddr_in tmp = addr;
+            socklen_t addrlen = sizeof(tmp);
+            if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&tmp, &addrlen) < 0) {
+                perror("keepalive2 file packet recvfrom");
+                continue;
             }
-        } else {
-            printf("Bad keepalive2 response received.\n");
-            return 1;
+            if (verbose_flag) {
+                print_packet("[Keepalive2_file recv] ", recv_packet, 40);
+            }
+            if (logging_flag) {
+                logging("[Keepalive2_file recv] ", recv_packet, 40);
+            }
+
+            /* we need this */
+            if (recv_packet[0] == 0x07 && recv_packet[2] == 0x10) {
+                printf("Filepacket received.\n");
+                break;
+            }
+            if (recv_packet[0] == 0x07 && recv_packet[2] == 0x28) {
+                break;
+            } else {
+                printf("try%d: Bad keepalive2 response received.\n", 5-try_recv_cnt);
+            }
         }
+        if (-1 == try_recv_cnt) return 1;
     }
 #endif
 
@@ -219,26 +229,29 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     memcpy(tail, test, 4);
     print_packet("[TEST MODE]<PREP TAIL> ", tail, 4);
 #else
-    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
-        perror("Failed to recv data");
-        return 1;
-    }
-    if (verbose_flag) {
-        print_packet("[Keepalive2_B recv] ", recv_packet, 40);
-    }
-    if (logging_flag) {
-        logging("[Keepalive2_B recv] ", recv_packet, 40);
-    }
-
-    if (recv_packet[0] == 0x07) {
-        if (recv_packet[2] != 0x28) {
-            printf("Bad keepalive2 response received.\n");
-            return 1;
+    /* ignore some indifferent packets in `try_recv_cnt`. */
+    try_recv_cnt = 5;
+    while (--try_recv_cnt >= 0) {
+        struct sockaddr_in tmp = addr;
+        socklen_t addrlen = sizeof(tmp);
+        if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&tmp, &addrlen) < 0) {
+            perror("keepalive2 first packet recvfrom");
+            continue;
         }
-    } else {
-        printf("Bad keepalive2 response received.\n");
-        return 1;
+        if (verbose_flag) {
+            print_packet("[Keepalive2_B recv] ", recv_packet, 40);
+        }
+        if (logging_flag) {
+            logging("[Keepalive2_B recv] ", recv_packet, 40);
+        }
+
+        if (recv_packet[0] == 0x07 && recv_packet[2] == 0x28) {
+            break;
+        } else {
+            printf("try%d: Bad keepalive2 response received.\n", 5-try_recv_cnt);
+        }
     }
+    if (-1 == try_recv_cnt) return 1;
     memcpy(tail, &recv_packet[16], 4);
 #endif
 
@@ -269,26 +282,29 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     exit(0);
 #endif
 
-    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
-        perror("Failed to recv data");
-        return 1;
-    }
-    if (verbose_flag) {
-        print_packet("[Keepalive2_D recv] ", recv_packet, 40);
-    }
-    if (logging_flag) {
-        logging("[Keepalive2_D recv] ", recv_packet, 40);
-    }
-
-    if (recv_packet[0] == 0x07) {
-        if (recv_packet[2] != 0x28) {
-            printf("Bad keepalive2 response received.\n");
-            return 1;
+    /* ignore some indifferent packets in `try_recv_cnt`. */
+    try_recv_cnt = 5;
+    while (--try_recv_cnt >= 0) {
+        struct sockaddr_in tmp = addr;
+        socklen_t addrlen = sizeof(tmp);
+        if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&tmp, &addrlen) < 0) {
+            perror("keepalive2 third packet recvfrom");
+            continue;
         }
-    } else {
-        printf("Bad keepalive2 response received.\n");
-        return 1;
+        if (verbose_flag) {
+            print_packet("[Keepalive2_D recv] ", recv_packet, 40);
+        }
+        if (logging_flag) {
+            logging("[Keepalive2_D recv] ", recv_packet, 40);
+        }
+        /* success ! */
+        if (recv_packet[0] == 0x07 && recv_packet[2] == 0x28) {
+            break;
+        } else {
+            printf("try%d: Bad keepalive2 response received.\n", 5-try_recv_cnt);
+        }
     }
+    if (-1 == try_recv_cnt) return 1;
 
     return 0;
 }
