@@ -113,7 +113,7 @@ extern void setifname(char const *ifname);
  * @return: 0: keep alive 进程正常退出，也许并不需要心跳进程
  *         !0: 错误原因导致keep alive 进程退出，也许是没法创建进程
  */
-extern int eap_daemon(char const *ifname);
+// extern int eap_daemon(char const *ifname);
 // #endif /* WINDOWS */
 #undef IDEN_LEN
 

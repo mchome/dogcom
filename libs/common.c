@@ -158,23 +158,23 @@ extern int getall_ifs(iflist_t *ifs, int *cnt)
 	fclose(fd);
 
 // #elif WIN32
-	pcap_if_t *alldevs;
-	char errbuf[PCAP_ERRBUF_SIZE];
-	if (-1 == pcap_findalldevs(&alldevs, errbuf)) {
-		_M("Get interfaces handler error: %s\n", errbuf);
-		return -1;
-	}
-	for (pcap_if_t *d = alldevs; d; d = d->next) {
-		if (is_filter(d->description)) {
-			_D("filtered %s.\n", d->description);
-			continue;
-		}
-		if (i >= *cnt) return -2;
-		strncpy(ifs[i].name, d->name, IFNAMSIZ);
-		strncpy(ifs[i].desc, d->description, IFDESCSIZ);
-		++i;
-	}
-	pcap_freealldevs(alldevs);
+// 	pcap_if_t *alldevs;
+// 	char errbuf[PCAP_ERRBUF_SIZE];
+// 	if (-1 == pcap_findalldevs(&alldevs, errbuf)) {
+// 		_M("Get interfaces handler error: %s\n", errbuf);
+// 		return -1;
+// 	}
+// 	for (pcap_if_t *d = alldevs; d; d = d->next) {
+// 		if (is_filter(d->description)) {
+// 			_D("filtered %s.\n", d->description);
+// 			continue;
+// 		}
+// 		if (i >= *cnt) return -2;
+// 		strncpy(ifs[i].name, d->name, IFNAMSIZ);
+// 		strncpy(ifs[i].desc, d->description, IFDESCSIZ);
+// 		++i;
+// 	}
+// 	pcap_freealldevs(alldevs);
 // #endif
 
 	*cnt = i;
