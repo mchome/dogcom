@@ -25,6 +25,7 @@ extern struct config drcom_config;
 extern int verbose_flag;
 extern int logging_flag;
 extern int eapol_flag;
+extern int eternal_flag;
 extern char *log_path;
 extern char mode[10];
 

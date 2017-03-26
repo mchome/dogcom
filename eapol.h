@@ -1,7 +1,7 @@
 #ifndef EAPOL_H__
 #define EAPOL_H__
 
-#include "common.h"
+#include "libs/common.h"
 
 #define IDEN_LEN    UNAME_LEN
 
@@ -106,7 +106,7 @@ extern int eaprefresh(char const *uname, char const *pwd);
  * 用来设置ifname
  */
 extern void setifname(char const *ifname);
-#ifdef WINDOWS
+// #ifdef WIN32
 /*
  * 由于windows下实现进程的特殊性，这里把eap_daemon导出给main_cli使用
  * ifname: 心跳的物理接口名字
@@ -114,7 +114,7 @@ extern void setifname(char const *ifname);
  *         !0: 错误原因导致keep alive 进程退出，也许是没法创建进程
  */
 extern int eap_daemon(char const *ifname);
-#endif /* WINDOWS */
+// #endif /* WINDOWS */
 #undef IDEN_LEN
 
 #endif

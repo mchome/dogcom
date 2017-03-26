@@ -1,4 +1,4 @@
-# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status") ![badge](https://img.shields.io/badge/built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")
+# dogcom ![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status") ![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love") ![version](https://img.shields.io/badge/%20Stable%20-%20v1.2.3-4dc71f.svg "Stable version")
 [Drcom-generic](https://github.com/drcoms/drcom-generic) implementation in C.
 
 ```
@@ -9,8 +9,9 @@ Options:
         --mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode
         --conf <FILEPATH>, -c <FILEPATH>      import configuration file
         --log <LOGPATH>, -l <LOGPATH>         specify log file
-        --802.1x, -8                          enable 802.1x
+        --802.1x, -x                          enable 802.1x
         --daemon, -d                          set daemon flag
+        --eternal, -e                         set eternal flag
         --verbose, -v                         set verbose flag
         --help, -h                            display this help
 ```
@@ -23,6 +24,8 @@ Config file is compatible with [drcom-generic](https://github.com/drcoms/drcom-g
 $ dogcom -m dhcp -c dogcom.conf
 $ dogcom -m dhcp -c dogcom.conf -l /tmp/dogcom.log -v
 $ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
+$ dogcom -m pppoe -c dogcom.conf -x # (PS: only on Linux build)
+$ dogcom -m pppoe -c dogcom.conf -e # eternal dogcoming (default times is 5)
 $ dogcom -m pppoe -c dogcom.conf -v
 ```
 
@@ -44,6 +47,7 @@ $ make force_encrypt=y # Force open encrypt mode in PPPoE version
 ### Thanks:
 - [gdut-drcom](https://github.com/chenhaowen01/gdut-drcom 'chenhaowen01')
 - [jlu-drcom-client](https://github.com/drcoms/jlu-drcom-client/tree/master/C-version 'feix')
+- [leetking](https://github.com/leetking 'leetking')
 
 ### Special thanks:
 - [Drcom-generic](https://github.com/drcoms/drcom-generic 'ly0')

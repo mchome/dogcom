@@ -13,26 +13,26 @@ typedef unsigned int uint32;	/* 四个字节 */
 
 #define FORMAT_TIME_MAX	(64)
 
-#ifdef LINUX
-# include <linux/limits.h>
-# include <netinet/if_ether.h>
-# include <arpa/inet.h>
-# include <net/if.h>
-# define EXE_PATH_MAX   (PATH_MAX+1)
-#elif defined(WINDOWS)
-# include <windows.h>
-# define ETH_ALEN	    (6)
-# define IF_NAMSIZE	    (64)
-# define MTU_MAX	    (65536)
-# define EXE_PATH_MAX   (MAX_PATH+1)
-# define IFDESCSIZ      (126)
-#endif
+// #ifdef LINUX
+#include <linux/limits.h>
+#include <netinet/if_ether.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#define EXE_PATH_MAX   (PATH_MAX+1)
+// #elif WIN32
+// # include <windows.h>
+// # define ETH_ALEN	    (6)
+// # define IF_NAMSIZE	    (64)
+// # define MTU_MAX	    (65536)
+// # define EXE_PATH_MAX   (MAX_PATH+1)
+// # define IFDESCSIZ      (126)
+// #endif
 
 typedef struct {
     char name[IF_NAMESIZE]; /* linux下是eth0, windows采用的是注册表类似的(\Device\NPF_{xxxx-xxx-xx-xx-xxx}) */
-#ifdef WINDOWS
-    char desc[IFDESCSIZ]; /* windows下描述(AMD PCNET Family PCI Ethernet Adapter) */
-#endif
+// #ifdef WIN32
+//     char desc[IFDESCSIZ]; /* windows下描述(AMD PCNET Family PCI Ethernet Adapter) */
+// #endif
 }iflist_t;
 
 

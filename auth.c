@@ -3,15 +3,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
-#include "common.h"
 
 #ifdef WIN32
-    #include <winsock2.h>
-    typedef int socklen_t;
+#include <winsock2.h>
+typedef int socklen_t;
 #else
-    #include <sys/socket.h>
-    #include <netinet/in.h>
-    #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 #include "libs/md4.h"
@@ -464,7 +463,10 @@ int dogcom(int try_times) {
 
     // start dogcoming
     if (strcmp(mode, "dhcp") == 0) {
-        for(int i = 0; i < try_times; i++) {
+        for(int try_counter = 0; try_counter < try_times; try_counter++) {
+            if(eternal_flag) {
+                try_counter = 0;
+            }
             unsigned char seed[4];
             unsigned char auth_information[16];
             if (challenge(sockfd, dest_addr, seed)) {
@@ -474,13 +476,13 @@ int dogcom(int try_times) {
                 }
                 sleep(3);
             } else {
-                msleep(100);
+                usleep(200000); // 0.2 sec
                 if (!login(sockfd, dest_addr, seed, auth_information)) {
                     int keepalive_counter = 0;
                     int first = 1;
                     while (1) {
                         if (!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
-                            msleep(100);
+                            usleep(200000); // 0.2 sec
                             if (keepalive_2(sockfd, dest_addr, &keepalive_counter, &first, 0)) {
                                 continue;
                             }
@@ -521,12 +523,16 @@ int dogcom(int try_times) {
                 }
                 login_first = 1;
                 try_counter++;
+                if(eternal_flag) {
+                    try_counter = 0;
+                }
                 if (try_counter >= try_times) {
                     break;
                 }
-                sleep(3);
+                sleep(5);
                 continue;
             } else {
+                usleep(200000); // 0.2 sec
                 if (pppoe_login(sockfd, dest_addr, &pppoe_counter, seed, sip, &login_first, &encrypt_mode, &encrypt_type)) {
                     continue;
                 } else {

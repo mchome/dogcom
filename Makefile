@@ -3,19 +3,16 @@ TARGET = dogcom
 INSTALL_DIR = /usr/bin/
 
 ifeq ($(debug), y)
-	CFLAGS += -std=gnu99 -Werror -DDEBUG -g
+	CFLAGS += -DDEBUG -g
 endif
 
 ifeq ($(win32), y)
-	CFLAGS += -std=gnu99 -Werror -DWINDOWS -DHAVE_REMOTE -I wpcap/include \
-			  -L wpcap/lib -lwpcap -lpacket -l-lws2_32
-	TARGET = dogcom-MinGW
-else
-	CFLAGS += -std=gnu99 -Werror -DLINUX
+	CFLAGS += -lws2_32
+	# TARGET = dogcom-MinGW
 endif
 
 ifeq ($(force_encrypt), y)
-	CFLAGS += -std=gnu99 -Werror -DFORCE_ENCRYPT
+	CFLAGS += -DFORCE_ENCRYPT
 endif
 
 ifeq ($(test), y)

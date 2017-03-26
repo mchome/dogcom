@@ -1,5 +1,7 @@
+#ifndef WIN32
+
 #include "eapol.h"
-#include "common.h"
+#include "libs/common.h"
 #include "libs/md5.h"
 
 #include <netinet/if_ether.h>
@@ -508,3 +510,5 @@ void setifname(char const *_ifname)
 {
 	strncpy(ifname, _ifname, IFNAMSIZ);
 }
+
+#endif

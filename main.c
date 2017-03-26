@@ -4,15 +4,15 @@
 #include <getopt.h>
 #include "configparse.h"
 #include "auth.h"
-#include "eapol.h"
-#include "common.h"
 
 #ifndef WIN32
 #include <limits.h>
 #include "daemon.h"
+#include "eapol.h"
+#include "libs/common.h"
 #endif
 
-#define VERSION "1.2.3"
+#define VERSION "1.3.0"
 
 void print_help(int exval);
 int try_smart_eaplogin(void);
@@ -29,10 +29,11 @@ int main(int argc, char *argv[]) {
             { "mode", required_argument, 0, 'm' },
             { "conf", required_argument, 0, 'c' },
             { "log", required_argument, 0, 'l' },
-            { "802.1x", required_argument, 0, '8' },
 #ifndef WIN32
             { "daemon", no_argument, 0, 'd' },
+            { "802.1x", required_argument, 0, 'x' },
 #endif
+            { "eternal", no_argument, 0, 'e' },
             { "verbose", no_argument, 0, 'v' },
             { "help", no_argument, 0, 'h' },
             { 0, 0, 0, 0 }
@@ -41,9 +42,9 @@ int main(int argc, char *argv[]) {
         int c;
         int option_index = 0;
 #ifdef WIN32
-        c = getopt_long(argc, argv, "m:c:l:vh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:l:evh", long_options, &option_index);
 #else
-        c = getopt_long(argc, argv, "m:c:l:8dvh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:l:xdevh", long_options, &option_index);
 #endif
         
         if (c == -1) {
@@ -87,12 +88,15 @@ int main(int argc, char *argv[]) {
             case 'd':
                 daemon_flag = 1;
                 break;
+            case 'x':
+                eapol_flag = 1;
+                break;
 #endif
+            case 'e':
+                eternal_flag = 1;
+                break;
             case 'v':
                 verbose_flag = 1;
-                break;
-            case '8':
-                eapol_flag = 1;
                 break;
             case 'h':
                 print_help(0);
@@ -120,13 +124,15 @@ int main(int argc, char *argv[]) {
 #ifdef WIN32 // dirty fix with win32
             strcpy(mode, tmp);
 #endif
-            // eable 802.1x authorization
-            if (eapol_flag) {
+
+#ifndef WIN32
+            if (eapol_flag) { // eable 802.1x authorization
                 if (0 != try_smart_eaplogin()) {
                     printf("Can't finish 802.1x authorization!\n");
                     return 1;
                 }
             }
+#endif
             dogcom(5);
         } else {
             return 1;
@@ -149,15 +155,17 @@ void print_help(int exval) {
     printf("\t--mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode \n");
     printf("\t--conf <FILEPATH>, -c <FILEPATH>      import configuration file\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
-    printf("\t--802.1x, -8                          enable 802.1x\n");
 #ifndef WIN32
     printf("\t--daemon, -d                          set daemon flag\n");
+    printf("\t--802.1x, -x                          enable 802.1x\n");
 #endif
+    printf("\t--eternal, -e                         set eternal flag\n");
     printf("\t--verbose, -v                         set verbose flag\n");
     printf("\t--help, -h                            display this help\n\n");
     exit(exval);
 }
 
+#ifndef WIN32
 int try_smart_eaplogin(void)
 {
 #define IFS_MAX     (64)
@@ -173,3 +181,4 @@ int try_smart_eaplogin(void)
     }
     return -1;
 }
+#endif

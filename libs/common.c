@@ -1,3 +1,5 @@
+#ifndef WIN32
+
 /*
  * 一些通用的代码
  */
@@ -9,30 +11,30 @@
 #include <time.h>
 #include "common.h"
 
-#ifdef LINUX
-# include <unistd.h>
-# include <arpa/inet.h>
-# include <net/ethernet.h>
-# include <sys/select.h>
-# include <net/if_arp.h>
-# include <net/if.h>
-# include <sys/ioctl.h>
-# include <netpacket/packet.h>
-# define PATH_SEP   '/'
-#elif defined(WINDOWS)
-# include <windows.h>
-# include <pcap.h>
-# define PATH_SEP   '\\'
-#endif
+// #ifdef LINUX
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <net/ethernet.h>
+#include <sys/select.h>
+#include <net/if_arp.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <netpacket/packet.h>
+#define PATH_SEP   '/'
+// #elif WIN32
+// # include <windows.h>
+// # include <pcap.h>
+// # define PATH_SEP   '\\'
+// #endif
 
 
 extern int getexedir(char *exedir)
 {
-#ifdef LINUX
+// #ifdef LINUX
     int cnt = readlink("/proc/self/exe", exedir, EXE_PATH_MAX);
-#elif defined(WINDOWS)
-    int cnt = GetModuleFileName(NULL, exedir, EXE_PATH_MAX);
-#endif
+// #elif WIN32
+//     int cnt = GetModuleFileName(NULL, exedir, EXE_PATH_MAX);
+// #endif
     if (cnt < 0 || cnt >= EXE_PATH_MAX)
         return -1;
     _D("exedir: %s\n", exedir);
@@ -89,7 +91,7 @@ static int is_filter(char const *ifname)
 	}
 	return 0;
 }
-#ifdef LINUX
+// #ifdef LINUX
 static char *get_ifname_from_buff(char *buff)
 {
 	char *s;
@@ -101,7 +103,7 @@ static char *get_ifname_from_buff(char *buff)
 	*buff = '\0';
 	return s;
 }
-#endif
+// #endif
 /*
  * 获取所有网络接口
  * ifnames 实际获取的接口
@@ -117,7 +119,7 @@ extern int getall_ifs(iflist_t *ifs, int *cnt)
 	int i = 0;
 	if (!ifs || *cnt <= 0) return -2;
 
-#ifdef LINUX    /* linux (unix osx?) */
+// #ifdef LINUX    /* linux (unix osx?) */
 #define _PATH_PROCNET_DEV "/proc/net/dev"
 #define BUFF_LINE_MAX	(1024)
 	char buff[BUFF_LINE_MAX];
@@ -155,7 +157,7 @@ extern int getall_ifs(iflist_t *ifs, int *cnt)
 	}
 	fclose(fd);
 
-#elif defined(WINDOWS)
+// #elif WIN32
 	pcap_if_t *alldevs;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	if (-1 == pcap_findalldevs(&alldevs, errbuf)) {
@@ -173,7 +175,7 @@ extern int getall_ifs(iflist_t *ifs, int *cnt)
 		++i;
 	}
 	pcap_freealldevs(alldevs);
-#endif
+// #endif
 
 	*cnt = i;
 	return i;
@@ -323,3 +325,5 @@ extern void msleep(long ms)
 	select(0, 0, 0, 0, &tv);
 }
 #endif /* LINUX */
+
+#endif

@@ -6,7 +6,8 @@
 
 int verbose_flag = 0;
 int logging_flag = 0;
-int eapol_flag   = 0;
+int eapol_flag = 0;
+int eternal_flag = 0;
 char *log_path;
 char mode[10];
 struct config drcom_config;
