@@ -49,13 +49,21 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
 #endif
 
     socklen_t addrlen = sizeof(addr);
-    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
-        perror("Failed to recv data");
-        return 1;
-    }
-    if (recv_packet[0] != 0x07) {
-        printf("Bad keepalive1 response received.\n");
-        return 1;
+    while(1) {
+        if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+            perror("Failed to recv data");
+            return 1;
+        } else {
+            if (recv_packet[0] == 0x07) {
+                break;
+            } else if (recv_packet[0] == 0x4d) {
+                DEBUG_PRINT(("Get notice packet."));
+                continue;
+            } else{
+                printf("Bad keepalive1 response received.\n");
+                return 1;
+            }
+        }
     }
 
     if (verbose_flag) {
@@ -118,7 +126,7 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
     keepalive_2_packet[4] = 0x0b;
     keepalive_2_packet[5] = type;
     if (filepacket) {
-        keepalive_2_packet[6] = 0x0f; 
+        keepalive_2_packet[6] = 0x0f;
         keepalive_2_packet[7] = 0x27;
     } else {
         memcpy(keepalive_2_packet + 6, drcom_config.KEEP_ALIVE_VERSION, 2);
