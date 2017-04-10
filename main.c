@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
             { "log", required_argument, 0, 'l' },
 #ifndef WIN32
             { "daemon", no_argument, 0, 'd' },
-            { "802.1x", required_argument, 0, 'x' },
+            { "802.1x", no_argument, 0, 'x' },
 #endif
             { "eternal", no_argument, 0, 'e' },
             { "verbose", no_argument, 0, 'v' },
