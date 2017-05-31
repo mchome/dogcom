@@ -1,5 +1,10 @@
 language: c
-compiler: gcc
+os:
+    - linux
+    - osx
+compiler:
+    - gcc
+    - clang
 
 script:
     - make test=y

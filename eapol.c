@@ -1,4 +1,4 @@
-#ifndef WIN32
+#ifdef linux
 
 #include "eapol.h"
 #include "libs/common.h"

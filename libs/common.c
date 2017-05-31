@@ -1,4 +1,4 @@
-#ifndef WIN32
+#ifdef linux
 
 /*
  * 一些通用的代码

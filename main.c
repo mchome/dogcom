@@ -5,14 +5,14 @@
 #include "configparse.h"
 #include "auth.h"
 
-#ifndef WIN32
+#ifdef linux
 #include <limits.h>
 #include "daemon.h"
 #include "eapol.h"
 #include "libs/common.h"
 #endif
 
-#define VERSION "1.3.1"
+#define VERSION "1.3.2"
 
 void print_help(int exval);
 int try_smart_eaplogin(void);
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
             { "mode", required_argument, 0, 'm' },
             { "conf", required_argument, 0, 'c' },
             { "log", required_argument, 0, 'l' },
-#ifndef WIN32
+#ifdef linux
             { "daemon", no_argument, 0, 'd' },
             { "802.1x", no_argument, 0, 'x' },
 #endif
@@ -41,10 +41,10 @@ int main(int argc, char *argv[]) {
 
         int c;
         int option_index = 0;
-#ifdef WIN32
-        c = getopt_long(argc, argv, "m:c:l:evh", long_options, &option_index);
-#else
+#ifdef linux
         c = getopt_long(argc, argv, "m:c:l:xdevh", long_options, &option_index);
+#else
+        c = getopt_long(argc, argv, "m:c:l:evh", long_options, &option_index);
 #endif
         
         if (c == -1) {
@@ -62,29 +62,37 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 'c':
+#ifndef __APPLE__
                 if (mode != NULL) {
-#ifdef WIN32
-                    file_path = optarg;
-#else
+#endif
+#ifdef linux
                     char path_c[PATH_MAX];
                     realpath(optarg, path_c);
                     file_path = strdup(path_c);
+#else
+                    file_path = optarg;
 #endif
+#ifndef __APPLE__
                 }
+#endif
                 break;
             case 'l':
+#ifndef __APPLE__
                 if (mode != NULL) {
-#ifdef WIN32
-                    log_path = optarg;
-#else
+#endif
+#ifdef linux
                     char path_l[PATH_MAX];
                     realpath(optarg, path_l);
                     log_path = strdup(path_l);
+#else
+                    log_path = optarg;
 #endif
                     logging_flag = 1;
+#ifndef __APPLE__
                 }
+#endif
                 break;
-#ifndef WIN32
+#ifdef linux
             case 'd':
                 daemon_flag = 1;
                 break;
@@ -109,7 +117,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
+#ifndef __APPLE__
     if (mode != NULL && file_path != NULL) {
+#endif
 #ifndef WIN32
         if (daemon_flag) {
             daemonise();
@@ -125,7 +135,7 @@ int main(int argc, char *argv[]) {
             strcpy(mode, tmp);
 #endif
 
-#ifndef WIN32
+#ifdef linux
             if (eapol_flag) { // eable 802.1x authorization
                 if (0 != try_smart_eaplogin()) {
                     printf("Can't finish 802.1x authorization!\n");
@@ -137,10 +147,12 @@ int main(int argc, char *argv[]) {
         } else {
             return 1;
         }
+#ifndef __APPLE__
     } else {
         printf("Need more options!\n\n");
         return 1;
     }
+#endif
     return 0;
 }
 
@@ -155,7 +167,7 @@ void print_help(int exval) {
     printf("\t--mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode \n");
     printf("\t--conf <FILEPATH>, -c <FILEPATH>      import configuration file\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
-#ifndef WIN32
+#ifdef linux
     printf("\t--daemon, -d                          set daemon flag\n");
     printf("\t--802.1x, -x                          enable 802.1x\n");
 #endif
@@ -165,7 +177,7 @@ void print_help(int exval) {
     exit(exval);
 }
 
-#ifndef WIN32
+#ifdef linux
 int try_smart_eaplogin(void)
 {
 #define IFS_MAX     (64)
