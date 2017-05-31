@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
 #ifndef __APPLE__
     if (mode != NULL && file_path != NULL) {
 #endif
-#ifndef WIN32
+#ifdef linux
         if (daemon_flag) {
             daemonise();
         }
