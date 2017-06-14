@@ -133,6 +133,9 @@ static int read_d_config(char *buf, int size) {
             drcom_config.ror_version = 0;
         }
         DEBUG_PRINT(("\n[PARSER_DEBUG]\n%d\n", drcom_config.ror_version));
+    } else if (strcmp(key, "bind_ip") == 0) {
+        strcpy(drcom_config.bind_ip, value);
+        DEBUG_PRINT(("[PARSER_DEBUG]%s\n", drcom_config.bind_ip));
     } else {
         return 1;
     }

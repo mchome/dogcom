@@ -21,7 +21,7 @@ typedef int socklen_t;
 #include "keepalive.h"
 #include "debug.h"
 
-#define BIND_IP "0.0.0.0"
+#define DEFAULT_BIND_IP "0.0.0.0"
 #define BIND_PORT 61440
 #define DEST_PORT 61440
 
@@ -420,8 +420,12 @@ int dogcom(int try_times) {
     bind_addr.sin_family = AF_INET;
 #ifdef WIN32
     bind_addr.sin_addr.S_un.S_addr = inet_addr(BIND_IP);
+    if (strlen(drcom_config.bind_ip)>0)
+        bind_addr.sin_addr.S_un.S_addr = inet_addr(drcom_config.bind_ip);
 #else
     bind_addr.sin_addr.s_addr = inet_addr(BIND_IP);
+    if (strlen(drcom_config.bind_ip)>0)
+        bind_addr.sin_addr.s_addr = inet_addr(drcom_config.bind_ip);
 #endif
     bind_addr.sin_port = htons(BIND_PORT);
 
