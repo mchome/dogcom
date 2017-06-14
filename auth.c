@@ -419,11 +419,11 @@ int dogcom(int try_times) {
     memset(&bind_addr, 0, sizeof(bind_addr));
     bind_addr.sin_family = AF_INET;
 #ifdef WIN32
-    bind_addr.sin_addr.S_un.S_addr = inet_addr(BIND_IP);
+    bind_addr.sin_addr.S_un.S_addr = inet_addr(DEFAULT_BIND_IP);
     if (strlen(drcom_config.bind_ip)>0)
         bind_addr.sin_addr.S_un.S_addr = inet_addr(drcom_config.bind_ip);
 #else
-    bind_addr.sin_addr.s_addr = inet_addr(BIND_IP);
+    bind_addr.sin_addr.s_addr = inet_addr(DEFAULT_BIND_IP);
     if (strlen(drcom_config.bind_ip)>0)
         bind_addr.sin_addr.s_addr = inet_addr(drcom_config.bind_ip);
 #endif
