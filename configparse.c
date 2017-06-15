@@ -10,6 +10,7 @@ int eapol_flag = 0;
 int eternal_flag = 0;
 char *log_path;
 char mode[10];
+char bind_ip[20];
 struct config drcom_config;
 
 static int read_d_config(char *buf, int size);

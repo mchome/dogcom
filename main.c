@@ -12,10 +12,12 @@
 #include "libs/common.h"
 #endif
 
-#define VERSION "1.3.2"
+#define VERSION "1.4.0"
 
 void print_help(int exval);
 int try_smart_eaplogin(void);
+
+static const char default_bind_ip[20] = "0.0.0.0";
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
@@ -28,6 +30,7 @@ int main(int argc, char *argv[]) {
         static const struct option long_options[] = {
             { "mode", required_argument, 0, 'm' },
             { "conf", required_argument, 0, 'c' },
+            { "bindip", required_argument, 0, 'b' },
             { "log", required_argument, 0, 'l' },
 #ifdef linux
             { "daemon", no_argument, 0, 'd' },
@@ -42,11 +45,11 @@ int main(int argc, char *argv[]) {
         int c;
         int option_index = 0;
 #ifdef linux
-        c = getopt_long(argc, argv, "m:c:l:xdevh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:b:l:dxevh", long_options, &option_index);
 #else
-        c = getopt_long(argc, argv, "m:c:l:evh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:b:l:evh", long_options, &option_index);
 #endif
-        
+
         if (c == -1) {
             break;
         }
@@ -75,6 +78,9 @@ int main(int argc, char *argv[]) {
 #ifndef __APPLE__
                 }
 #endif
+                break;
+            case 'b':
+                strcpy(bind_ip, optarg);
                 break;
             case 'l':
 #ifndef __APPLE__
@@ -143,6 +149,9 @@ int main(int argc, char *argv[]) {
                 }
             }
 #endif
+            if (strlen(bind_ip) == 0) {
+                memcpy(bind_ip, default_bind_ip, sizeof(default_bind_ip));
+            }
             dogcom(5);
         } else {
             return 1;
@@ -166,6 +175,7 @@ void print_help(int exval) {
     printf("Options:\n");
     printf("\t--mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode \n");
     printf("\t--conf <FILEPATH>, -c <FILEPATH>      import configuration file\n");
+    printf("\t--bindip <IPADDR>, -b <IPADDR>        bind your ip address(default is 0.0.0.0)\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
 #ifdef linux
     printf("\t--daemon, -d                          set daemon flag\n");

@@ -1,4 +1,4 @@
-# dogcom [![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status")](https://travis-ci.org/mchome/dogcom) [![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")](https://github.com/mchome/dogcom) [![version](https://img.shields.io/badge/stable%20-%20v1.3.1-4dc71f.svg "stable version")](https://github.com/mchome/dogcom/tree/v1.3.1)
+# dogcom [![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status")](https://travis-ci.org/mchome/dogcom) [![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")](https://github.com/mchome/dogcom) [![version](https://img.shields.io/badge/stable%20-%20v1.4.0-4dc71f.svg "stable version")](https://github.com/mchome/dogcom/tree/v1.4.0)
 
 [Drcom-generic](https://github.com/drcoms/drcom-generic) implementation in C.
 
@@ -9,6 +9,7 @@ Usage:
 Options:
         --mode <dhcp/pppoe>, -m <dhcp/pppoe>  set your dogcom mode
         --conf <FILEPATH>, -c <FILEPATH>      import configuration file
+        --bindip <IPADDR>, -b <IPADDR>        bind your ip address(default is 0.0.0.0)
         --log <LOGPATH>, -l <LOGPATH>         specify log file
         --802.1x, -x                          enable 802.1x
         --daemon, -d                          set daemon flag
@@ -28,6 +29,7 @@ $ dogcom -m dhcp -c dogcom.conf -d # (PS: only on Linux build)
 $ dogcom -m pppoe -c dogcom.conf -x # (PS: only on Linux build)
 $ dogcom -m pppoe -c dogcom.conf -e # eternal dogcoming (default times is 5)
 $ dogcom -m pppoe -c dogcom.conf -v
+$ dogcom -m dhcp -c dogcom.conf -b 10.2.3.12 -v
 ```
 
 #### To build:

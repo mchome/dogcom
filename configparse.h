@@ -28,6 +28,7 @@ extern int eapol_flag;
 extern int eternal_flag;
 extern char *log_path;
 extern char mode[10];
+extern char bind_ip[20];
 
 int config_parse(char *filepath);
 
