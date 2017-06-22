@@ -53,16 +53,17 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
         perror("Failed to recv data");
         return 1;
     }
-    if (recv_packet[0] != 0x02) {
-        printf("Bad challenge response received.\n");
-        return 1;
-    }
 
     if (verbose_flag) {
         print_packet("[Challenge recv] ", recv_packet, 76);
     }
     if (logging_flag) {
         logging("[Challenge recv] ", recv_packet, 76);
+    }
+
+    if (recv_packet[0] != 0x02) {
+        printf("Bad challenge response received.\n");
+        return 1;
     }
 
     memcpy(seed, &recv_packet[4], 4 * sizeof(*recv_packet));
@@ -226,10 +227,6 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         perror("Failed to recv data");
         return 1;
     }
-    if (recv_packet[0] != 0x04) {
-        printf("<<< login failed >>>\n");
-        return 1;
-    }
 
     if (verbose_flag) {
         print_packet("[login recv] ", recv_packet, 100);
@@ -238,6 +235,11 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     if (logging_flag) {
         logging("[login recv] ", recv_packet, 100);
         logging("<<< Logged in >>>", NULL, 0);
+    }
+
+    if (recv_packet[0] != 0x04) {
+        printf("<<< login failed >>>\n");
+        return 1;
     }
 
     memcpy(auth_information, &recv_packet[23], 16);
@@ -285,6 +287,14 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
         perror("Failed to recv data");
         return 1;
     }
+
+    if (verbose_flag) {
+        print_packet("[Challenge recv] ", recv_packet, 32);
+    }
+    if (logging_flag) {
+        logging("[Challenge recv] ", recv_packet, 32);
+    }
+
     if (recv_packet[0] != 0x07) {
         printf("Bad challenge response received.\n");
         return 1;
@@ -298,13 +308,6 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
 #ifdef FORCE_ENCRYPT
     *encrypt_mode = 1;
 #endif
-
-    if (verbose_flag) {
-        print_packet("[Challenge recv] ", recv_packet, 32);
-    }
-    if (logging_flag) {
-        logging("[Challenge recv] ", recv_packet, 32);
-    }
 
     memcpy(seed, &recv_packet[8], 4);
     memcpy(sip, &recv_packet[12], 4);
@@ -385,16 +388,17 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
         perror("Failed to recv data");
         return 1;
     }
-    if (recv_packet[0] != 0x07) {
-        printf("Bad pppoe_login response received.\n");
-        return 1;
-    }
 
     if (verbose_flag) {
         print_packet("[PPPoE_login recv] ", recv_packet, 48);
     }
     if (logging_flag) {
         logging("[PPPoE_login recv] ", recv_packet, 48);
+    }
+
+    if (recv_packet[0] != 0x07) {
+        printf("Bad pppoe_login response received.\n");
+        return 1;
     }
 
     if(recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {

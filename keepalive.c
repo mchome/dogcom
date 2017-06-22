@@ -54,6 +54,13 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
             perror("Failed to recv data");
             return 1;
         } else {
+            if (verbose_flag) {
+                print_packet("[Keepalive1 recv] ", recv_packet, 100);
+            }
+            if (logging_flag) {
+                logging("[Keepalive1 recv] ", recv_packet, 100);
+            }
+
             if (recv_packet[0] == 0x07) {
                 break;
             } else if (recv_packet[0] == 0x4d) {
@@ -64,13 +71,6 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
                 return 1;
             }
         }
-    }
-
-    if (verbose_flag) {
-        print_packet("[Keepalive1 recv] ", recv_packet, 100);
-    }
-    if (logging_flag) {
-        logging("[Keepalive1 recv] ", recv_packet, 100);
     }
 
     return 0;
@@ -204,7 +204,7 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     }
 #endif
 
-    // send the first pacekt
+    // send the first packet
     *first = 0;
     memset(keepalive_2_packet, 0, 40);
     if (strcmp(mode, "pppoe") == 0) {

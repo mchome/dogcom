@@ -3,7 +3,7 @@
 
 struct config {
     char server[20];
-    char username[20];
+    char username[36];
     char password[20];
     unsigned char CONTROLCHECKSTATUS;
     unsigned char ADAPTERNUM;
