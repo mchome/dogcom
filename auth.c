@@ -171,12 +171,12 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     int counter = 312;
     if (drcom_config.ror_version) {
         login_packet[counter + 1] = strlen(drcom_config.password);
+        counter += 2;
         for(int i = 0, x = 0; i < strlen(drcom_config.password); i++) {
             x = (int)MD5A[i] ^ (int)drcom_config.password[i];
-            login_packet[counter + 2 + i] = (unsigned char)(((x << 3) & 0xff) + (x >> 5));
-            counter += 1;
+            login_packet[counter + i] = (unsigned char)(((x << 3) & 0xff) + (x >> 5));
         }
-        counter += 2;
+        counter += 6;
         // print_packet("TEST ", ror, 6);
     }
     login_packet[counter] = 0x02;
@@ -422,7 +422,7 @@ int dogcom(int try_times) {
     memset(&bind_addr, 0, sizeof(bind_addr));
     bind_addr.sin_family = AF_INET;
     if (verbose_flag) {
-        printf("Your are binding at %s.\n\n", bind_ip);
+        printf("You are binding at %s!\n\n", bind_ip);
     }
 #ifdef WIN32
     bind_addr.sin_addr.S_un.S_addr = inet_addr(bind_ip);
