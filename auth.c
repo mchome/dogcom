@@ -228,18 +228,25 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         return 1;
     }
 
-    if (verbose_flag) {
-        print_packet("[login recv] ", recv_packet, 100);
-        printf("<<< Logged in >>>\n");
-    }
-    if (logging_flag) {
-        logging("[login recv] ", recv_packet, 100);
-        logging("<<< Logged in >>>", NULL, 0);
-    }
-
     if (recv_packet[0] != 0x04) {
-        printf("<<< login failed >>>\n");
+        if (verbose_flag) {
+            print_packet("[login recv] ", recv_packet, 100);
+        }
+        printf("<<< Login failed >>>\n");
+        if (logging_flag) {
+            logging("[login recv] ", recv_packet, 100);
+            logging("<<< Login failed >>>", NULL, 0);
+        }
         return 1;
+    } else {
+        if (verbose_flag) {
+            print_packet("[login recv] ", recv_packet, 100);
+        }
+        printf("<<< Logged in >>>\n");
+        if (logging_flag) {
+            logging("[login recv] ", recv_packet, 100);
+            logging("<<< Logged in >>>", NULL, 0);
+        }
     }
 
     memcpy(auth_information, &recv_packet[23], 16);
