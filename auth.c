@@ -492,6 +492,7 @@ int dogcom(int try_times) {
                 usleep(200000); // 0.2 sec
                 if (!login(sockfd, dest_addr, seed, auth_information)) {
                     int keepalive_counter = 0;
+                    int keepalive_try_counter = 0;
                     int first = 1;
                     while (1) {
                         if (!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
@@ -507,6 +508,10 @@ int dogcom(int try_times) {
                             }
                             sleep(20);
                         } else {
+                            if (keepalive_try_counter > 5) {
+                                break;
+                            }
+                            keepalive_try_counter ++;
                             continue;
                         }
                     }
