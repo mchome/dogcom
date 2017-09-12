@@ -169,6 +169,10 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     memcpy(login_packet + 182, &drcom_config.host_os, strlen(drcom_config.host_os));
     memcpy(login_packet + 310, drcom_config.AUTH_VERSION, 2);
     int counter = 312;
+    unsigned int ror_padding = 8 - strlen(drcom_config.password);
+    if (!drcom_config.ror_version) {
+        ror_padding = 2;
+    }
     if (drcom_config.ror_version) {
         login_packet[counter + 1] = strlen(drcom_config.password);
         counter += 2;
@@ -176,8 +180,8 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
             x = (int)MD5A[i] ^ (int)drcom_config.password[i];
             login_packet[counter + i] = (unsigned char)(((x << 3) & 0xff) + (x >> 5));
         }
-        counter += 6;
-        // print_packet("TEST ", ror, 6);
+        counter += strlen(drcom_config.password);
+        // print_packet("TEST ", ror, strlen(drcom_config.password));
     }
     login_packet[counter] = 0x02;
     login_packet[counter + 1] = 0x0c;
@@ -203,8 +207,8 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     }
     memcpy(login_packet + counter + 2, checksum2, 4);
     memcpy(login_packet + counter + 8, drcom_config.mac, 6);
-    login_packet[counter + 16] = 0xe9;
-    login_packet[counter + 17] = 0x13;
+    login_packet[counter + ror_padding + 14] = 0xe9;
+    login_packet[counter + ror_padding + 15] = 0x13;
 
     sendto(sockfd, login_packet, sizeof(login_packet), 0, (struct sockaddr *)&addr, sizeof(addr));
 
