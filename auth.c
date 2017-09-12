@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 
 #ifdef WIN32
 #include <winsock2.h>

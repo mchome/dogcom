@@ -12,7 +12,7 @@
 #include "libs/common.h"
 #endif
 
-#define VERSION "1.4.3"
+#define VERSION "1.5.0"
 
 void print_help(int exval);
 int try_smart_eaplogin(void);
