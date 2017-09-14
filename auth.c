@@ -77,9 +77,14 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
 
 
 int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]) {
-    int login_packet_size;
+    unsigned int login_packet_size;
+    unsigned int length_padding = 0;
+    if (strlen(drcom_config.password) > 8) {
+        length_padding = strlen(drcom_config.password) - 8;
+        if (length_padding%2) { length_padding++; }
+    }
     if (drcom_config.ror_version) {
-        login_packet_size = 338;
+        login_packet_size = 338 + length_padding;
     } else {
         login_packet_size = 330;
     }
@@ -170,7 +175,12 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     memcpy(login_packet + 182, &drcom_config.host_os, strlen(drcom_config.host_os));
     memcpy(login_packet + 310, drcom_config.AUTH_VERSION, 2);
     int counter = 312;
-    unsigned int ror_padding = 8 - strlen(drcom_config.password);
+    unsigned int ror_padding = 0;
+    if (strlen(drcom_config.password) <= 8) {
+        ror_padding = 8 - strlen(drcom_config.password);
+    } else {
+        if ((strlen(drcom_config.password)-8) % 2) { ror_padding = 1; }
+    }
     if (!drcom_config.ror_version) {
         ror_padding = 2;
     }
