@@ -67,7 +67,7 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
         return 1;
     }
 
-    memcpy(seed, &recv_packet[4], 4 * sizeof(*recv_packet));
+    memcpy(seed, &recv_packet[4], 4);
 #ifdef DEBUG
     print_packet("<GET SEED> ", seed, 4);
 #endif
@@ -181,9 +181,6 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     } else {
         if ((strlen(drcom_config.password)-8) % 2) { ror_padding = 1; }
     }
-    if (!drcom_config.ror_version) {
-        ror_padding = 2;
-    }
     if (drcom_config.ror_version) {
         login_packet[counter + 1] = strlen(drcom_config.password);
         counter += 2;
@@ -193,6 +190,8 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         }
         counter += strlen(drcom_config.password);
         // print_packet("TEST ", ror, strlen(drcom_config.password));
+    } else {
+        ror_padding = 2;
     }
     login_packet[counter] = 0x02;
     login_packet[counter + 1] = 0x0c;

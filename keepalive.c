@@ -19,56 +19,130 @@ typedef int socklen_t;
 #include "debug.h"
 
 int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]) {
-    unsigned char keepalive_1_packet[42], recv_packet[1024], MD5A[16];
-    memset(keepalive_1_packet, 0, 42);
-    keepalive_1_packet[0] = 0xff;
-    int MD5A_len = 6 + strlen(drcom_config.password);
-    unsigned char MD5A_str[MD5A_len];
-    MD5A_str[0] = 0x03;
-    MD5A_str[1] = 0x01;
-    memcpy(MD5A_str + 2, seed, 4);
-    memcpy(MD5A_str + 6, drcom_config.password, strlen(drcom_config.password));
-    MD5(MD5A_str, MD5A_len, MD5A);
-    memcpy(keepalive_1_packet + 1, MD5A, 16);
-    memcpy(keepalive_1_packet + 20, auth_information, 16);
-    keepalive_1_packet[36] = rand() & 0xff;
-    keepalive_1_packet[37] = rand() & 0xff;
-
-    sendto(sockfd, keepalive_1_packet, 42, 0, (struct sockaddr *)&addr, sizeof(addr));
-
-    if (verbose_flag) {
-        print_packet("[Keepalive1 sent] ", keepalive_1_packet, 42);
-    }
-    if (logging_flag) {
-        logging("[Keepalive1 sent] ", keepalive_1_packet, 42);
-    }
-
+    if (drcom_config.keepalive1_mod) {
+        unsigned char keepalive_1_packet1[8] = {0x07, 0x01, 0x08, 0x00, 0x01, 0x00, 0x00, 0x00};
+        unsigned char recv_packet1[1024], keepalive_1_packet2[38], recv_packet2[1024];
+        memset(keepalive_1_packet2, 0, 38);
+        sendto(sockfd, keepalive_1_packet1, 8, 0, (struct sockaddr *)&addr, sizeof(addr));
+        if (verbose_flag) {
+            print_packet("[Keepalive1 sent] ", keepalive_1_packet1, 42);
+        }
+        if (logging_flag) {
+            logging("[Keepalive1 sent] ", keepalive_1_packet1, 42);
+        }
 #ifdef TEST
-    printf("[TEST MODE]IN TEST MODE, PASS\n");
-    return 0;
+        printf("[TEST MODE]IN TEST MODE, PASS\n");
+        return 0;
 #endif
+        socklen_t addrlen = sizeof(addr);
+        while(1) {
+            if (recvfrom(sockfd, recv_packet1, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+                perror("Failed to recv data");
+                return 1;
+            } else {
+                if (verbose_flag) {
+                    print_packet("[Keepalive1 challenge_recv] ", recv_packet1, 100);
+                }
+                if (logging_flag) {
+                    logging("[Keepalive1 challenge_recv] ", recv_packet1, 100);
+                }
 
-    socklen_t addrlen = sizeof(addr);
-    while(1) {
-        if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+                if (recv_packet1[0] == 0x07) {
+                    break;
+                } else if (recv_packet1[0] == 0x4d) {
+                    DEBUG_PRINT(("Get notice packet.\n"));
+                    continue;
+                } else{
+                    printf("Bad keepalive1 challenge response received.\n");
+                    return 1;
+                }
+            }
+        }
+
+        unsigned char keepalive1_seed[4] = {0};
+        int encrypt_type;
+        unsigned char crc[8] = {0};
+        memcpy(keepalive1_seed, &recv_packet1[8], 4);
+        encrypt_type = keepalive1_seed[0] & 3;
+        gen_crc(keepalive1_seed, encrypt_type, crc);
+        keepalive_1_packet2[0] = 0xff;
+        memcpy(keepalive_1_packet2+8, keepalive1_seed, 4);
+        memcpy(keepalive_1_packet2+12, crc, 8);
+        memcpy(keepalive_1_packet2+20, auth_information, 16);
+        keepalive_1_packet2[36] = rand() & 0xff;
+        keepalive_1_packet2[37] = rand() & 0xff;
+
+        sendto(sockfd, keepalive_1_packet2, 42, 0, (struct sockaddr *)&addr, sizeof(addr));
+
+        if (recvfrom(sockfd, recv_packet2, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
             perror("Failed to recv data");
             return 1;
         } else {
             if (verbose_flag) {
-                print_packet("[Keepalive1 recv] ", recv_packet, 100);
+                print_packet("[Keepalive1 recv] ", recv_packet2, 100);
             }
             if (logging_flag) {
-                logging("[Keepalive1 recv] ", recv_packet, 100);
+                logging("[Keepalive1 recv] ", recv_packet2, 100);
             }
 
-            if (recv_packet[0] == 0x07) {
-                break;
-            } else if (recv_packet[0] == 0x4d) {
-                DEBUG_PRINT(("Get notice packet."));
-                continue;
-            } else{
+            if (recv_packet2[0] != 0x07) {
                 printf("Bad keepalive1 response received.\n");
                 return 1;
+            }
+        }
+
+    } else {
+        unsigned char keepalive_1_packet[42], recv_packet[1024], MD5A[16];
+        memset(keepalive_1_packet, 0, 42);
+        keepalive_1_packet[0] = 0xff;
+        int MD5A_len = 6 + strlen(drcom_config.password);
+        unsigned char MD5A_str[MD5A_len];
+        MD5A_str[0] = 0x03;
+        MD5A_str[1] = 0x01;
+        memcpy(MD5A_str + 2, seed, 4);
+        memcpy(MD5A_str + 6, drcom_config.password, strlen(drcom_config.password));
+        MD5(MD5A_str, MD5A_len, MD5A);
+        memcpy(keepalive_1_packet + 1, MD5A, 16);
+        memcpy(keepalive_1_packet + 20, auth_information, 16);
+        keepalive_1_packet[36] = rand() & 0xff;
+        keepalive_1_packet[37] = rand() & 0xff;
+
+        sendto(sockfd, keepalive_1_packet, 42, 0, (struct sockaddr *)&addr, sizeof(addr));
+
+        if (verbose_flag) {
+            print_packet("[Keepalive1 sent] ", keepalive_1_packet, 42);
+        }
+        if (logging_flag) {
+            logging("[Keepalive1 sent] ", keepalive_1_packet, 42);
+        }
+
+#ifdef TEST
+        printf("[TEST MODE]IN TEST MODE, PASS\n");
+        return 0;
+#endif
+
+        socklen_t addrlen = sizeof(addr);
+        while(1) {
+            if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+                perror("Failed to recv data");
+                return 1;
+            } else {
+                if (verbose_flag) {
+                    print_packet("[Keepalive1 recv] ", recv_packet, 100);
+                }
+                if (logging_flag) {
+                    logging("[Keepalive1 recv] ", recv_packet, 100);
+                }
+
+                if (recv_packet[0] == 0x07) {
+                    break;
+                } else if (recv_packet[0] == 0x4d) {
+                    DEBUG_PRINT(("Get notice packet."));
+                    continue;
+                } else{
+                    printf("Bad keepalive1 response received.\n");
+                    return 1;
+                }
             }
         }
     }

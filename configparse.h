@@ -17,6 +17,7 @@ struct config {
     char host_os[20];
     unsigned char KEEP_ALIVE_VERSION[2];
     int ror_version;
+    int keepalive1_mod;
     unsigned char pppoe_flag;
     unsigned char keep_alive2_flag; /* abandoned */
 };

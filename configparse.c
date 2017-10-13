@@ -53,6 +53,7 @@ static int read_d_config(char *buf, int size) {
     if (strlen(key = strtok(buf, delim))) {
         value = strtok(NULL, delim);
     }
+    drcom_config.keepalive1_mod = 0;
 
     if (strcmp(key, "server") == 0) {
         strcpy(drcom_config.server, value);
@@ -134,6 +135,13 @@ static int read_d_config(char *buf, int size) {
             drcom_config.ror_version = 0;
         }
         DEBUG_PRINT(("\n[PARSER_DEBUG]\n%d\n", drcom_config.ror_version));
+    } else if (strcmp(key, "keepalive1_mod") == 0) {
+        if (strcmp(value, "True") == 0) {
+            drcom_config.keepalive1_mod = 1;
+        } else  {
+            drcom_config.keepalive1_mod = 0;
+        }
+        DEBUG_PRINT(("\n[PARSER_DEBUG]\n%d\n", drcom_config.keepalive1_mod));
     } else {
         return 1;
     }
