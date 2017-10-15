@@ -1,4 +1,4 @@
-# dogcom [![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status")](https://travis-ci.org/mchome/dogcom) [![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")](https://github.com/mchome/dogcom) [![version](https://img.shields.io/badge/stable%20-%20v1.6.0-4dc71f.svg "stable version")](https://github.com/mchome/dogcom/tree/v1.6.0)
+# dogcom [![travis-ci](https://travis-ci.org/mchome/dogcom.svg "Build status")](https://travis-ci.org/mchome/dogcom) [![badge](https://img.shields.io/badge/%20built%20with-%20%E2%9D%A4-ff69b4.svg "build with love")](https://github.com/mchome/dogcom) [![version](https://img.shields.io/badge/stable%20-%20v1.6.1-4dc71f.svg "stable version")](https://github.com/mchome/dogcom/tree/v1.6.1)
 
 [Drcom-generic](https://github.com/drcoms/drcom-generic) implementation in C.
 

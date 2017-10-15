@@ -251,6 +251,51 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
             logging("[login recv] ", recv_packet, 100);
             logging("<<< Login failed >>>", NULL, 0);
         }
+        char err_msg[100];
+        if (recv_packet[0] == 0x05) {
+            switch (recv_packet[4]) {
+                case CHECK_MAC:
+                    strcpy(err_msg, "[Tips] Someone is using this account with wired.");
+                    break;
+                case SERVER_BUSY:
+                    strcpy(err_msg, "[Tips] The server is busy, please log back in again.");
+                    break;
+                case WRONG_PASS:
+                    strcpy(err_msg, "[Tips] Account and password not match.");
+                    break;
+                case NOT_ENOUGH:
+                    strcpy(err_msg, "[Tips] The cumulative time or traffic for this account has exceeded the limit.");
+                    break;
+                case FREEZE_UP:
+                    strcpy(err_msg, "[Tips] This account is suspended.");
+                    break;
+                case NOT_ON_THIS_IP:
+                    strcpy(err_msg, "[Tips] IP address does not match, this account can only be used in the specified IP address.");
+                    break;
+                case NOT_ON_THIS_MAC:
+                    strcpy(err_msg, "[Tips] MAC address does not match, this account can only be used in the specified IP and MAC address.");
+                    break;
+                case TOO_MUCH_IP:
+                    strcpy(err_msg, "[Tips] This account has too many IP addresses.");
+                    break;
+                case UPDATE_CLIENT:
+                    strcpy(err_msg, "[Tips] The client version is incorrect.");
+                    break;
+                case NOT_ON_THIS_IP_MAC:
+                    strcpy(err_msg, "[Tips] This account can only be used on specified MAC and IP address.");
+                    break;
+                case MUST_USE_DHCP:
+                    strcpy(err_msg, "[Tips] Your PC set up a static IP, please change to DHCP, and then re-login.");
+                    break;
+                default:
+                    strcpy(err_msg, "[Tips] Unknown error number.");
+                    break;
+            }
+            printf("%s\n", err_msg);
+            if (logging_flag) {
+                logging(err_msg, NULL, 0);
+            }
+        }
         return 1;
     } else {
         if (verbose_flag) {

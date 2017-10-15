@@ -8,7 +8,15 @@ endif
 
 ifeq ($(win32), y)
 	CFLAGS += -lws2_32
-	# TARGET = dogcom-MinGW
+	# TARGET = dogcom.exe
+endif
+
+ifeq ($(static), y)
+	CFLAGS += -static
+endif
+
+ifeq ($(strip), y)
+	CFLAGS += -Os -s -Wno-unused-result
 endif
 
 ifeq ($(force_encrypt), y)
