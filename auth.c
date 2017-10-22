@@ -251,7 +251,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
             logging("[login recv] ", recv_packet, 100);
             logging("<<< Login failed >>>", NULL, 0);
         }
-        char err_msg[100];
+        char err_msg[200];
         if (recv_packet[0] == 0x05) {
             switch (recv_packet[4]) {
                 case CHECK_MAC:
