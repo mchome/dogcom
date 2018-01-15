@@ -37,7 +37,11 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         socklen_t addrlen = sizeof(addr);
         while(1) {
             if (recvfrom(sockfd, recv_packet1, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+                fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
                 perror("Failed to recv data");
+#endif
                 return 1;
             } else {
                 if (verbose_flag) {
@@ -75,7 +79,11 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         sendto(sockfd, keepalive_1_packet2, 42, 0, (struct sockaddr *)&addr, sizeof(addr));
 
         if (recvfrom(sockfd, recv_packet2, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+            fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
             perror("Failed to recv data");
+#endif
             return 1;
         } else {
             if (verbose_flag) {
@@ -124,7 +132,11 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         socklen_t addrlen = sizeof(addr);
         while(1) {
             if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+                fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
                 perror("Failed to recv data");
+#endif
                 return 1;
             } else {
                 if (verbose_flag) {
@@ -250,7 +262,11 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
             logging("[Keepalive2_file sent] ", keepalive_2_packet, 40);
         }
         if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+            fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
             perror("Failed to recv data");
+#endif
             return 1;
         }
         if (verbose_flag) {
@@ -302,7 +318,11 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     print_packet("[TEST MODE]<PREP TAIL> ", tail, 4);
 #else
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
         perror("Failed to recv data");
+#endif
         return 1;
     }
     if (verbose_flag) {
@@ -352,7 +372,11 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
 #endif
 
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
         perror("Failed to recv data");
+#endif
         return 1;
     }
     if (verbose_flag) {

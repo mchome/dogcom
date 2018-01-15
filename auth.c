@@ -51,7 +51,11 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
 
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
         perror("Failed to recv data");
+#endif
         return 1;
     }
 
@@ -238,7 +242,11 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
 
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
         perror("Failed to recv data");
+#endif
         return 1;
     }
 
@@ -350,7 +358,11 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
 
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
         perror("Failed to recv data");
+#endif
         return 1;
     }
 
@@ -451,7 +463,11 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
 
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
+#else        
         perror("Failed to recv data");
+#endif
         return 1;
     }
 
@@ -511,12 +527,20 @@ int dogcom(int try_times) {
 
     // create socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to create socket", WSAGetLastError());
+#else        
         perror("Failed to create socket");
+#endif
         return 1;
     }
     // bind socket
     if (bind(sockfd, (struct sockaddr *)&bind_addr, sizeof(bind_addr)) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to bind socket", WSAGetLastError());
+#else        
         perror("Failed to bind socket");
+#endif
         return 1;
     }
 
@@ -529,7 +553,11 @@ int dogcom(int try_times) {
     timeout.tv_usec = 0;
 #endif
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+#ifdef WIN32
+        fprintf(stderr,"%s: %d", "Failed to set sock opt", WSAGetLastError());
+#else        
         perror("Failed to set sock opt");
+#endif
         return 1;
     }
 
