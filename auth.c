@@ -52,8 +52,8 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+        get_lasterror("Failed to recv data");
+#else
         perror("Failed to recv data");
 #endif
         return 1;
@@ -243,8 +243,8 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+        get_lasterror("Failed to recv data");
+#else
         perror("Failed to recv data");
 #endif
         return 1;
@@ -259,7 +259,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
             logging("[login recv] ", recv_packet, 100);
             logging("<<< Login failed >>>", NULL, 0);
         }
-        char err_msg[200];
+        char err_msg[256];
         if (recv_packet[0] == 0x05) {
             switch (recv_packet[4]) {
                 case CHECK_MAC:
@@ -359,8 +359,8 @@ int pppoe_challenge(int sockfd, struct sockaddr_in addr, int *pppoe_counter, uns
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+        get_lasterror("Failed to recv data");
+#else
         perror("Failed to recv data");
 #endif
         return 1;
@@ -464,8 +464,8 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     socklen_t addrlen = sizeof(addr);
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+        get_lasterror("Failed to recv data");
+#else
         perror("Failed to recv data");
 #endif
         return 1;
@@ -528,8 +528,8 @@ int dogcom(int try_times) {
     // create socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to create socket", WSAGetLastError());
-#else        
+        get_lasterror("Failed to create socket");
+#else
         perror("Failed to create socket");
 #endif
         return 1;
@@ -537,8 +537,8 @@ int dogcom(int try_times) {
     // bind socket
     if (bind(sockfd, (struct sockaddr *)&bind_addr, sizeof(bind_addr)) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to bind socket", WSAGetLastError());
-#else        
+        get_lasterror("Failed to bind socket");
+#else
         perror("Failed to bind socket");
 #endif
         return 1;
@@ -554,8 +554,8 @@ int dogcom(int try_times) {
 #endif
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to set sock opt", WSAGetLastError());
-#else        
+        get_lasterror("Failed to set sock opt");
+#else
         perror("Failed to set sock opt");
 #endif
         return 1;
@@ -701,3 +701,18 @@ void logging(char msg[10], unsigned char *packet, int length) {
 
     fclose(ptr_file);
 }
+
+#ifdef WIN32
+void get_lasterror(char *msg) {
+    char err_msg[256];
+    err_msg[0] = '\0';
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        err_msg,
+        sizeof(err_msg),
+        NULL);
+    fprintf(stderr,"%s: %s", msg, err_msg);
+}
+#endif

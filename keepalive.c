@@ -38,8 +38,8 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         while(1) {
             if (recvfrom(sockfd, recv_packet1, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-                fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+                get_lasterror("Failed to recv data");
+#else
                 perror("Failed to recv data");
 #endif
                 return 1;
@@ -80,8 +80,8 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
 
         if (recvfrom(sockfd, recv_packet2, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-            fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+            get_lasterror("Failed to recv data");
+#else
             perror("Failed to recv data");
 #endif
             return 1;
@@ -133,8 +133,8 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         while(1) {
             if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-                fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+                get_lasterror("Failed to recv data");
+#else
                 perror("Failed to recv data");
 #endif
                 return 1;
@@ -263,8 +263,8 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
         }
         if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-            fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+            get_lasterror("Failed to recv data");
+#else
             perror("Failed to recv data");
 #endif
             return 1;
@@ -319,8 +319,8 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
 #else
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+        get_lasterror("Failed to recv data");
+#else
         perror("Failed to recv data");
 #endif
         return 1;
@@ -373,8 +373,8 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
 
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
-        fprintf(stderr,"%s: %d", "Failed to recv data", WSAGetLastError());
-#else        
+        get_lasterror("Failed to recv data");
+#else
         perror("Failed to recv data");
 #endif
         return 1;

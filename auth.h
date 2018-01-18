@@ -28,5 +28,6 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
 int dogcom(int try_times);
 void print_packet(char msg[10], unsigned char *packet, int length);
 void logging(char msg[10], unsigned char *packet, int length);
+void get_lasterror(char *msg);
 
 #endif // AUTH_H_
