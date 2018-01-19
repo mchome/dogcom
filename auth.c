@@ -82,18 +82,15 @@ int dhcp_challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
 int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[], int try_JLUversion) {
     unsigned int login_packet_size;
     unsigned int length_padding = 0;
-
     int JLU_padding = 0;
-    if (try_JLUversion) {
-        printf("Start JLU mode.\n");
-        if (logging_flag) {
-            logging("Start JLU mode.\n", NULL, 0);
-        }
-    }
 
     if (strlen(drcom_config.password) > 8) {
         length_padding = strlen(drcom_config.password) - 8 + (length_padding%2);
         if (try_JLUversion) {
+            printf("Start JLU mode.\n");
+            if (logging_flag) {
+                logging("Start JLU mode.", NULL, 0);
+            }
             if (strlen(drcom_config.password) != 16) {
                 JLU_padding = strlen(drcom_config.password) / 4;
             }
@@ -184,14 +181,26 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     unsigned char OSMinor[4] = {0x01};
     unsigned char OSBuild[4] = {0x28, 0x0a};
     unsigned char PlatformID[4] = {0x02};
-    // unsigned char ServicePack[40] = {0x33, 0x64, 0x63, 0x37, 0x39, 0x66, 0x35, 0x32, 0x31, 0x32, 0x65, 0x38, 0x31, 0x37, 0x30, 0x61, 0x63, 0x66, 0x61, 0x39, 0x65, 0x63, 0x39, 0x35, 0x66, 0x31, 0x64, 0x37, 0x34, 0x39, 0x31, 0x36, 0x35, 0x34, 0x32, 0x62, 0x65, 0x37, 0x62, 0x31};
+    if (try_JLUversion) {
+        OSVersionInfoSize[0] = 0x94;
+        OSMajor[0] = 0x06;
+        OSMinor[0] = 0x02;
+        OSBuild[0] = 0xf0;
+        OSBuild[1] = 0x23;
+        PlatformID[0] = 0x02;
+        unsigned char ServicePack[40] = {0x33, 0x64, 0x63, 0x37, 0x39, 0x66, 0x35, 0x32, 0x31, 0x32, 0x65, 0x38, 0x31, 0x37, 0x30, 0x61, 0x63, 0x66, 0x61, 0x39, 0x65, 0x63, 0x39, 0x35, 0x66, 0x31, 0x64, 0x37, 0x34, 0x39, 0x31, 0x36, 0x35, 0x34, 0x32, 0x62, 0x65, 0x37, 0x62, 0x31};
+        unsigned char hostname[9] = {0x44, 0x72, 0x43, 0x4f, 0x4d, 0x00, 0xcf, 0x07, 0x68};
+        memcpy(login_packet + 182, hostname, 9);
+        memcpy(login_packet + 246, ServicePack, 40);
+    }
     memcpy(login_packet + 162, OSVersionInfoSize, 4);
     memcpy(login_packet + 166, OSMajor, 4);
     memcpy(login_packet + 170, OSMinor, 4);
     memcpy(login_packet + 174, OSBuild, 4);
     memcpy(login_packet + 178, PlatformID, 4);
-    memcpy(login_packet + 182, &drcom_config.host_os, strlen(drcom_config.host_os));
-    // memcpy(login_packet + 214, ServicePack, 40);
+    if (!try_JLUversion) {
+        memcpy(login_packet + 182, &drcom_config.host_os, strlen(drcom_config.host_os));
+    }
     memcpy(login_packet + 310, drcom_config.AUTH_VERSION, 2);
     int counter = 312;
     unsigned int ror_padding = 0;
@@ -202,6 +211,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
         if (try_JLUversion) { ror_padding = JLU_padding; }
     }
     if (drcom_config.ror_version) {
+        MD5(MD5A_str, MD5A_len, MD5A);
         login_packet[counter + 1] = strlen(drcom_config.password);
         counter += 2;
         for(int i = 0, x = 0; i < strlen(drcom_config.password); i++) {
@@ -239,6 +249,10 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     memcpy(login_packet + counter + 8, drcom_config.mac, 6);
     login_packet[counter + ror_padding + 14] = 0xe9;
     login_packet[counter + ror_padding + 15] = 0x13;
+    if (try_JLUversion) {
+        login_packet[counter + ror_padding + 14] = 0x60;
+        login_packet[counter + ror_padding + 15] = 0xa2;
+    }
 
     sendto(sockfd, login_packet, sizeof(login_packet), 0, (struct sockaddr *)&addr, sizeof(addr));
 
