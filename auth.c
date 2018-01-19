@@ -25,7 +25,7 @@ typedef int socklen_t;
 #define BIND_PORT 61440
 #define DEST_PORT 61440
 
-int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
+int dhcp_challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
     unsigned char challenge_packet[20], recv_packet[1024];
     memset(challenge_packet, 0, 20);
     challenge_packet[0] = 0x01;
@@ -79,13 +79,26 @@ int challenge(int sockfd, struct sockaddr_in addr, unsigned char seed[]) {
     return 0;
 }
 
-
-int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]) {
+int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[], int try_JLUversion) {
     unsigned int login_packet_size;
     unsigned int length_padding = 0;
+
+    int JLU_padding = 0;
+    if (try_JLUversion) {
+        printf("Start JLU mode.\n");
+        if (logging_flag) {
+            logging("Start JLU mode.\n", NULL, 0);
+        }
+    }
+
     if (strlen(drcom_config.password) > 8) {
-        length_padding = strlen(drcom_config.password) - 8;
-        if (length_padding%2) { length_padding++; }
+        length_padding = strlen(drcom_config.password) - 8 + (length_padding%2);
+        if (try_JLUversion) {
+            if (strlen(drcom_config.password) != 16) {
+                JLU_padding = strlen(drcom_config.password) / 4;
+            }
+            length_padding = 28 + (strlen(drcom_config.password) - 8) + JLU_padding;
+        }
     }
     if (drcom_config.ror_version) {
         login_packet_size = 338 + length_padding;
@@ -171,12 +184,14 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
     unsigned char OSMinor[4] = {0x01};
     unsigned char OSBuild[4] = {0x28, 0x0a};
     unsigned char PlatformID[4] = {0x02};
+    // unsigned char ServicePack[40] = {0x33, 0x64, 0x63, 0x37, 0x39, 0x66, 0x35, 0x32, 0x31, 0x32, 0x65, 0x38, 0x31, 0x37, 0x30, 0x61, 0x63, 0x66, 0x61, 0x39, 0x65, 0x63, 0x39, 0x35, 0x66, 0x31, 0x64, 0x37, 0x34, 0x39, 0x31, 0x36, 0x35, 0x34, 0x32, 0x62, 0x65, 0x37, 0x62, 0x31};
     memcpy(login_packet + 162, OSVersionInfoSize, 4);
     memcpy(login_packet + 166, OSMajor, 4);
     memcpy(login_packet + 170, OSMinor, 4);
     memcpy(login_packet + 174, OSBuild, 4);
     memcpy(login_packet + 178, PlatformID, 4);
     memcpy(login_packet + 182, &drcom_config.host_os, strlen(drcom_config.host_os));
+    // memcpy(login_packet + 214, ServicePack, 40);
     memcpy(login_packet + 310, drcom_config.AUTH_VERSION, 2);
     int counter = 312;
     unsigned int ror_padding = 0;
@@ -184,6 +199,7 @@ int login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned ch
         ror_padding = 8 - strlen(drcom_config.password);
     } else {
         if ((strlen(drcom_config.password)-8) % 2) { ror_padding = 1; }
+        if (try_JLUversion) { ror_padding = JLU_padding; }
     }
     if (drcom_config.ror_version) {
         login_packet[counter + 1] = strlen(drcom_config.password);
@@ -563,13 +579,15 @@ int dogcom(int try_times) {
 
     // start dogcoming
     if (strcmp(mode, "dhcp") == 0) {
+        int login_failed_attempts = 0;
+        int try_JLUversion = 0;
         for(int try_counter = 0; try_counter < try_times; try_counter++) {
             if(eternal_flag) {
                 try_counter = 0;
             }
             unsigned char seed[4];
             unsigned char auth_information[16];
-            if (challenge(sockfd, dest_addr, seed)) {
+            if (dhcp_challenge(sockfd, dest_addr, seed)) {
                 printf("Retrying...\n");
                 if (logging_flag) {
                     logging("Retrying...", NULL, 0);
@@ -577,7 +595,10 @@ int dogcom(int try_times) {
                 sleep(3);
             } else {
                 usleep(200000); // 0.2 sec
-                if (!login(sockfd, dest_addr, seed, auth_information)) {
+                if (login_failed_attempts > 2) {
+                    try_JLUversion = 1;
+                }
+                if (!dhcp_login(sockfd, dest_addr, seed, auth_information, try_JLUversion)) {
                     int keepalive_counter = 0;
                     int keepalive_try_counter = 0;
                     int first = 1;
@@ -603,6 +624,7 @@ int dogcom(int try_times) {
                         }
                     }
                 } else {
+                    login_failed_attempts += 1;
                     printf("Retrying...\n");
                     if (logging_flag) {
                         logging("Retrying...", NULL, 0);
