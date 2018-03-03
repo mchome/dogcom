@@ -25,10 +25,10 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         memset(keepalive_1_packet2, 0, 38);
         sendto(sockfd, keepalive_1_packet1, 8, 0, (struct sockaddr *)&addr, sizeof(addr));
         if (verbose_flag) {
-            print_packet("[Keepalive1 sent] ", keepalive_1_packet1, 42);
+            print_packet("[Keepalive1_packet1 sent] ", keepalive_1_packet1, 8);
         }
         if (logging_flag) {
-            logging("[Keepalive1 sent] ", keepalive_1_packet1, 42);
+            logging("[Keepalive1_packet1 sent] ", keepalive_1_packet1, 8);
         }
 #ifdef TEST
         printf("[TEST MODE]IN TEST MODE, PASS\n");
@@ -76,7 +76,13 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         keepalive_1_packet2[36] = rand() & 0xff;
         keepalive_1_packet2[37] = rand() & 0xff;
 
-        sendto(sockfd, keepalive_1_packet2, 42, 0, (struct sockaddr *)&addr, sizeof(addr));
+        sendto(sockfd, keepalive_1_packet2, 38, 0, (struct sockaddr *)&addr, sizeof(addr));
+        if (verbose_flag) {
+            print_packet("[Keepalive1_packet2 sent] ", keepalive_1_packet2, 38);
+        }
+        if (logging_flag) {
+            logging("[Keepalive1_packet2 sent] ", keepalive_1_packet2, 38);
+        }
 
         if (recvfrom(sockfd, recv_packet2, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
