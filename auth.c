@@ -1,26 +1,26 @@
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <time.h>
+#include <string.h>
 #include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 
 #ifdef WIN32
 #include <winsock2.h>
 typedef int socklen_t;
 #else
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #endif
 
+#include "auth.h"
+#include "configparse.h"
+#include "debug.h"
+#include "keepalive.h"
 #include "libs/md4.h"
 #include "libs/md5.h"
 #include "libs/sha1.h"
-#include "auth.h"
-#include "configparse.h"
-#include "keepalive.h"
-#include "debug.h"
 
 #define BIND_PORT 61440
 #define DEST_PORT 61440
@@ -85,7 +85,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     int JLU_padding = 0;
 
     if (strlen(drcom_config.password) > 8) {
-        length_padding = strlen(drcom_config.password) - 8 + (length_padding%2);
+        length_padding = strlen(drcom_config.password) - 8 + (length_padding % 2);
         if (try_JLUversion) {
             printf("Start JLU mode.\n");
             if (logging_flag) {
@@ -207,14 +207,18 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     if (strlen(drcom_config.password) <= 8) {
         ror_padding = 8 - strlen(drcom_config.password);
     } else {
-        if ((strlen(drcom_config.password)-8) % 2) { ror_padding = 1; }
-        if (try_JLUversion) { ror_padding = JLU_padding; }
+        if ((strlen(drcom_config.password) - 8) % 2) {
+            ror_padding = 1;
+        }
+        if (try_JLUversion) {
+            ror_padding = JLU_padding;
+        }
     }
     if (drcom_config.ror_version) {
         MD5(MD5A_str, MD5A_len, MD5A);
         login_packet[counter + 1] = strlen(drcom_config.password);
         counter += 2;
-        for(int i = 0, x = 0; i < strlen(drcom_config.password); i++) {
+        for (int i = 0, x = 0; i < strlen(drcom_config.password); i++) {
             x = (int)MD5A[i] ^ (int)drcom_config.password[i];
             login_packet[counter + i] = (unsigned char)(((x << 3) & 0xff) + (x >> 5));
         }
@@ -225,7 +229,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     }
     login_packet[counter] = 0x02;
     login_packet[counter + 1] = 0x0c;
-    unsigned char checksum2_str[counter + 18]; // [counter + 14 + 4]
+    unsigned char checksum2_str[counter + 18];  // [counter + 14 + 4]
     memset(checksum2_str, 0, counter + 18);
     unsigned char checksum2_tmp[6] = {0x01, 0x26, 0x07, 0x11};
     memcpy(checksum2_str, login_packet, counter + 2);
@@ -236,7 +240,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     for (int i = 0; i < counter + 14; i += 4) {
         ret = 0;
         // reverse unsigned char array[4]
-        for(int j = 4; j > 0; j--) {
+        for (int j = 4; j > 0; j--) {
             ret = ret * 256 + (int)checksum2_str[i + j - 1];
         }
         sum ^= ret;
@@ -351,7 +355,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     print_packet("<GET AUTH_INFORMATION> ", auth_information, 16);
 #endif
 
-    if(recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
+    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
         DEBUG_PRINT(("Get notice packet."));
     }
 
@@ -459,7 +463,7 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
     if (*encrypt_type == 0) {
         for (int i = 0; i < 32; i += 4) {
             ret = 0;
-            for(int j = 4; j > 0; j--) {
+            for (int j = 4; j > 0; j--) {
                 ret = ret * 256 + (int)crc_tmp[i + j - 1];
             }
             sum ^= ret;
@@ -513,7 +517,7 @@ int pppoe_login(int sockfd, struct sockaddr_in addr, int *pppoe_counter, unsigne
         return 1;
     }
 
-    if(recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
+    if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
         DEBUG_PRINT(("Get notice packet."));
     }
 
@@ -524,7 +528,7 @@ int dogcom(int try_times) {
 #ifdef WIN32
     WORD sockVersion = MAKEWORD(2, 2);
     WSADATA wsaData;
-    if(WSAStartup(sockVersion, &wsaData) != 0) {
+    if (WSAStartup(sockVersion, &wsaData) != 0) {
         return 1;
     }
 #endif
@@ -595,8 +599,8 @@ int dogcom(int try_times) {
     if (strcmp(mode, "dhcp") == 0) {
         int login_failed_attempts = 0;
         int try_JLUversion = 0;
-        for(int try_counter = 0; try_counter < try_times; try_counter++) {
-            if(eternal_flag) {
+        for (int try_counter = 0; try_counter < try_times; try_counter++) {
+            if (eternal_flag) {
                 try_counter = 0;
             }
             unsigned char seed[4];
@@ -608,7 +612,7 @@ int dogcom(int try_times) {
                 }
                 sleep(3);
             } else {
-                usleep(200000); // 0.2 sec
+                usleep(200000);  // 0.2 sec
                 if (login_failed_attempts > 2) {
                     try_JLUversion = 1;
                 }
@@ -618,7 +622,7 @@ int dogcom(int try_times) {
                     int first = 1;
                     while (1) {
                         if (!keepalive_1(sockfd, dest_addr, seed, auth_information)) {
-                            usleep(200000); // 0.2 sec
+                            usleep(200000);  // 0.2 sec
                             if (keepalive_2(sockfd, dest_addr, &keepalive_counter, &first, 0)) {
                                 continue;
                             }
@@ -633,7 +637,7 @@ int dogcom(int try_times) {
                             if (keepalive_try_counter > 5) {
                                 break;
                             }
-                            keepalive_try_counter ++;
+                            keepalive_try_counter++;
                             continue;
                         }
                     }
@@ -650,13 +654,13 @@ int dogcom(int try_times) {
     } else if (strcmp(mode, "pppoe") == 0) {
         int pppoe_counter = 0;
         int keepalive_counter = 0;
-        unsigned char seed[4], sip[4];  /* pppoe's seed == dhcp's KEEP_ALIVE_VERSION */
+        unsigned char seed[4], sip[4]; /* pppoe's seed == dhcp's KEEP_ALIVE_VERSION */
         int login_first = 1;
         int first = 1;
         int encrypt_mode = 0;
         int encrypt_type = 0;
         int try_counter = 0;
-        while(1) {
+        while (1) {
             if (pppoe_challenge(sockfd, dest_addr, &pppoe_counter, seed, sip, &encrypt_mode)) {
                 printf("Retrying...\n");
                 if (logging_flag) {
@@ -664,7 +668,7 @@ int dogcom(int try_times) {
                 }
                 login_first = 1;
                 try_counter++;
-                if(eternal_flag) {
+                if (eternal_flag) {
                     try_counter = 0;
                 }
                 if (try_counter >= try_times) {
@@ -673,7 +677,7 @@ int dogcom(int try_times) {
                 sleep(5);
                 continue;
             } else {
-                usleep(200000); // 0.2 sec
+                usleep(200000);  // 0.2 sec
                 if (pppoe_login(sockfd, dest_addr, &pppoe_counter, seed, sip, &login_first, &encrypt_mode, &encrypt_type)) {
                     continue;
                 } else {
@@ -708,7 +712,6 @@ int dogcom(int try_times) {
     return 1;
 }
 
-
 void print_packet(char msg[10], unsigned char *packet, int length) {
     printf("%s", msg);
     for (int i = 0; i < length; i++) {
@@ -727,7 +730,7 @@ void logging(char msg[10], unsigned char *packet, int length) {
     time(&timep);
     p = localtime(&timep);
     fprintf(ptr_file, "[%04d/%02d/%02d %s %02d:%02d:%02d] ",
-            (1900 + p -> tm_year), (1 + p -> tm_mon), p -> tm_mday, wday[p -> tm_wday], p -> tm_hour, p -> tm_min, p -> tm_sec);    
+            (1900 + p->tm_year), (1 + p->tm_mon), p->tm_mday, wday[p->tm_wday], p->tm_hour, p->tm_min, p->tm_sec);
 
     fprintf(ptr_file, "%s", msg);
     for (int i = 0; i < length; i++) {
@@ -743,12 +746,12 @@ void get_lasterror(char *msg) {
     char err_msg[256];
     err_msg[0] = '\0';
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        err_msg,
-        sizeof(err_msg),
-        NULL);
-    fprintf(stderr,"%s: %s", msg, err_msg);
+                  NULL,
+                  WSAGetLastError(),
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  err_msg,
+                  sizeof(err_msg),
+                  NULL);
+    fprintf(stderr, "%s: %s", msg, err_msg);
 }
 #endif

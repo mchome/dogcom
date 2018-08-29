@@ -33,4 +33,4 @@ extern char bind_ip[20];
 
 int config_parse(char *filepath);
 
-#endif // CONFIGPARSE_H_
+#endif  // CONFIGPARSE_H_

@@ -3,31 +3,30 @@
 
 #include "libs/common.h"
 
-#define IDEN_LEN    UNAME_LEN
+#define IDEN_LEN UNAME_LEN
 
-#define TRY_TIMES   (3)
+#define TRY_TIMES (3)
 /* 每次请求超过TIMEOUT秒，就重新请求一次 */
-#define TIMEOUT     (3)
+#define TIMEOUT (3)
 /* eap 在EAP_KPALV_TIMEOUT秒内没有回应，认为不需要心跳 */
-#define EAP_KPALV_TIMEOUT   (420)   /* 7分钟 */
+#define EAP_KPALV_TIMEOUT (420) /* 7分钟 */
 
 /* ethii层取0x888e表示上层是8021.x */
 #define ETHII_8021X (0x888e)
 
-#define EAPOL_VER       (0x01)
-#define EAPOL_PACKET    (0x00)
-#define EAPOL_START     (0x01)
-#define EAPOL_LOGOFF    (0x02)
+#define EAPOL_VER (0x01)
+#define EAPOL_PACKET (0x00)
+#define EAPOL_START (0x01)
+#define EAPOL_LOGOFF (0x02)
 /* 貌似请求下线的id都是这个 */
 #define EAPOL_LOGOFF_ID (255)
 
-#define EAP_CODE_REQ    (0x01)
-#define EAP_CODE_RES    (0x02)
-#define EAP_CODE_SUCS   (0x03)
-#define EAP_CODE_FAIL   (0x04)
-#define EAP_TYPE_IDEN   (0x01)
-#define EAP_TYPE_MD5    (0x04)
-
+#define EAP_CODE_REQ (0x01)
+#define EAP_CODE_RES (0x02)
+#define EAP_CODE_SUCS (0x03)
+#define EAP_CODE_FAIL (0x04)
+#define EAP_TYPE_IDEN (0x01)
+#define EAP_TYPE_MD5 (0x04)
 
 #pragma pack(1)
 /* ethii 帧 */
@@ -35,11 +34,11 @@
 typedef struct {
     uchar dst_mac[ETH_ALEN];
     uchar src_mac[ETH_ALEN];
-    uint16 type;        /* 取值0x888e，表明是8021.x */
-}ethII_t;
+    uint16 type; /* 取值0x888e，表明是8021.x */
+} ethII_t;
 /* eapol 帧 */
 typedef struct {
-    uchar ver;          /* 取值0x01 */
+    uchar ver; /* 取值0x01 */
     /*
      * 0x00: eapol-packet
      * 0x01: eapol-start
@@ -47,7 +46,7 @@ typedef struct {
      */
     uchar type;
     uint16 len;
-}eapol_t;
+} eapol_t;
 /* eap报文头 */
 typedef struct {
     /*
@@ -64,21 +63,21 @@ typedef struct {
      * 0x04: md5-challenge
      */
     uchar type;
-}eap_t;
+} eap_t;
 /* 报文体 */
-#define MD5_SIZE    16
-#define STUFF_LEN   (64)
+#define MD5_SIZE 16
+#define STUFF_LEN (64)
 typedef union {
     uchar identity[IDEN_LEN];
     struct {
         uchar _size;
         uchar _md5value[MD5_SIZE];
         uchar _exdata[STUFF_LEN];
-    }md5clg;
-}eapbody_t;
-#define md5size     md5clg._size
-#define md5value    md5clg._md5value
-#define md5exdata   md5clg._exdata
+    } md5clg;
+} eapbody_t;
+#define md5size md5clg._size
+#define md5value md5clg._md5value
+#define md5exdata md5clg._exdata
 #pragma pack()
 
 /*

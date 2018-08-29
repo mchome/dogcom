@@ -8,4 +8,4 @@ void daemonise();
 extern int daemon_flag;
 extern int pid_file_handle;
 
-#endif // DAEMON_H_
+#endif  // DAEMON_H_

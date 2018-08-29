@@ -1,7 +1,7 @@
+#include "configparse.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "configparse.h"
 #include "debug.h"
 
 int verbose_flag = 0;
@@ -131,14 +131,14 @@ static int read_d_config(char *buf, int size) {
     } else if (strcmp(key, "ror_version") == 0) {
         if (strcmp(value, "True") == 0) {
             drcom_config.ror_version = 1;
-        } else  {
+        } else {
             drcom_config.ror_version = 0;
         }
         DEBUG_PRINT(("\n[PARSER_DEBUG]\n%d\n", drcom_config.ror_version));
     } else if (strcmp(key, "keepalive1_mod") == 0) {
         if (strcmp(value, "True") == 0) {
             drcom_config.keepalive1_mod = 1;
-        } else  {
+        } else {
             drcom_config.keepalive1_mod = 0;
         }
         DEBUG_PRINT(("\n[PARSER_DEBUG]\n%d\n", drcom_config.keepalive1_mod));

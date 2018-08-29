@@ -1,12 +1,12 @@
 #ifdef linux
 
+#include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <string.h>
-#include <signal.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "debug.h"
 
 int daemon_flag = 0;
@@ -18,7 +18,7 @@ void kill_daemon() {
 }
 
 void signal_handler(int signal) {
-    switch(signal) {
+    switch (signal) {
         case SIGHUP:
             break;
         case SIGINT:
@@ -29,7 +29,7 @@ void signal_handler(int signal) {
             break;
         default:
             break;
-    }    
+    }
 }
 
 void daemonise() {
@@ -82,7 +82,7 @@ void daemonise() {
     open("/dev/null", O_WRONLY);
     open("/dev/null", O_RDWR);
 
-    pid_file_handle = open("/tmp/dogcom.pid", O_RDWR|O_CREAT, 0600);
+    pid_file_handle = open("/tmp/dogcom.pid", O_RDWR | O_CREAT, 0600);
     if (pid_file_handle < 0) {
         exit(1);
     }

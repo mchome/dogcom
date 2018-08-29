@@ -1,22 +1,22 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef WIN32
 #include <winsock2.h>
 typedef int socklen_t;
 #else
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 #endif
 
+#include "auth.h"
+#include "configparse.h"
+#include "debug.h"
+#include "keepalive.h"
 #include "libs/md4.h"
 #include "libs/md5.h"
 #include "libs/sha1.h"
-#include "keepalive.h"
-#include "configparse.h"
-#include "auth.h"
-#include "debug.h"
 
 int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]) {
     if (drcom_config.keepalive1_mod) {
@@ -35,7 +35,7 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         return 0;
 #endif
         socklen_t addrlen = sizeof(addr);
-        while(1) {
+        while (1) {
             if (recvfrom(sockfd, recv_packet1, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
                 get_lasterror("Failed to recv data");
@@ -56,7 +56,7 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
                 } else if (recv_packet1[0] == 0x4d) {
                     DEBUG_PRINT(("Get notice packet.\n"));
                     continue;
-                } else{
+                } else {
                     printf("Bad keepalive1 challenge response received.\n");
                     return 1;
                 }
@@ -70,9 +70,9 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         encrypt_type = keepalive1_seed[0] & 3;
         gen_crc(keepalive1_seed, encrypt_type, crc);
         keepalive_1_packet2[0] = 0xff;
-        memcpy(keepalive_1_packet2+8, keepalive1_seed, 4);
-        memcpy(keepalive_1_packet2+12, crc, 8);
-        memcpy(keepalive_1_packet2+20, auth_information, 16);
+        memcpy(keepalive_1_packet2 + 8, keepalive1_seed, 4);
+        memcpy(keepalive_1_packet2 + 12, crc, 8);
+        memcpy(keepalive_1_packet2 + 20, auth_information, 16);
         keepalive_1_packet2[36] = rand() & 0xff;
         keepalive_1_packet2[37] = rand() & 0xff;
 
@@ -136,7 +136,7 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
 #endif
 
         socklen_t addrlen = sizeof(addr);
-        while(1) {
+        while (1) {
             if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) < 0) {
 #ifdef WIN32
                 get_lasterror("Failed to recv data");
@@ -157,7 +157,7 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
                 } else if (recv_packet[0] == 0x4d) {
                     DEBUG_PRINT(("Get notice packet."));
                     continue;
-                } else{
+                } else {
                     printf("Bad keepalive1 response received.\n");
                     return 1;
                 }
@@ -210,8 +210,7 @@ void gen_crc(unsigned char seed[], int encrypt_type, unsigned char crc[]) {
     }
 }
 
-
-void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive_counter, int filepacket, int type, int encrypt_type){
+void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive_counter, int filepacket, int type, int encrypt_type) {
     keepalive_2_packet[0] = 0x07;
     keepalive_2_packet[1] = keepalive_counter;
     keepalive_2_packet[2] = 0x28;
@@ -225,14 +224,14 @@ void keepalive_2_packetbuilder(unsigned char keepalive_2_packet[], int keepalive
     }
     keepalive_2_packet[8] = 0x2f;
     keepalive_2_packet[9] = 0x12;
-    if(type == 3) {
+    if (type == 3) {
         unsigned char host_ip[4] = {0};
         if (strcmp(mode, "dhcp") == 0) {
             sscanf(drcom_config.host_ip, "%hhd.%hhd.%hhd.%hhd",
-                &host_ip[0],
-                &host_ip[1],
-                &host_ip[2],
-                &host_ip[3]);
+                   &host_ip[0],
+                   &host_ip[1],
+                   &host_ip[2],
+                   &host_ip[3]);
             memcpy(keepalive_2_packet + 28, host_ip, 4);
         } else if (strcmp(mode, "pppoe") == 0) {
             unsigned char crc[8] = {0};
@@ -247,7 +246,7 @@ int keepalive_2(int sockfd, struct sockaddr_in addr, int *keepalive_counter, int
     socklen_t addrlen = sizeof(addr);
 
 #ifdef TEST
-        printf("[TEST MODE]IN TEST MODE, PASS\n");
+    printf("[TEST MODE]IN TEST MODE, PASS\n");
 #else
     if (*first) {
         // send the file packet

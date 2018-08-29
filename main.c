@@ -1,9 +1,9 @@
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
-#include "configparse.h"
 #include "auth.h"
+#include "configparse.h"
 
 #ifdef linux
 #include <limits.h>
@@ -28,19 +28,18 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         static const struct option long_options[] = {
-            { "mode", required_argument, 0, 'm' },
-            { "conf", required_argument, 0, 'c' },
-            { "bindip", required_argument, 0, 'b' },
-            { "log", required_argument, 0, 'l' },
+            {"mode", required_argument, 0, 'm'},
+            {"conf", required_argument, 0, 'c'},
+            {"bindip", required_argument, 0, 'b'},
+            {"log", required_argument, 0, 'l'},
 #ifdef linux
-            { "daemon", no_argument, 0, 'd' },
-            { "802.1x", no_argument, 0, 'x' },
+            {"daemon", no_argument, 0, 'd'},
+            {"802.1x", no_argument, 0, 'x'},
 #endif
-            { "eternal", no_argument, 0, 'e' },
-            { "verbose", no_argument, 0, 'v' },
-            { "help", no_argument, 0, 'h' },
-            { 0, 0, 0, 0 }
-        };
+            {"eternal", no_argument, 0, 'e'},
+            {"verbose", no_argument, 0, 'v'},
+            {"help", no_argument, 0, 'h'},
+            {0, 0, 0, 0}};
 
         int c;
         int option_index = 0;
@@ -73,7 +72,7 @@ int main(int argc, char *argv[]) {
                     realpath(optarg, path_c);
                     file_path = strdup(path_c);
 #else
-                    file_path = optarg;
+                file_path = optarg;
 #endif
 #ifndef __APPLE__
                 }
@@ -91,7 +90,7 @@ int main(int argc, char *argv[]) {
                     realpath(optarg, path_l);
                     log_path = strdup(path_l);
 #else
-                    log_path = optarg;
+                log_path = optarg;
 #endif
                     logging_flag = 1;
 #ifndef __APPLE__
@@ -132,17 +131,17 @@ int main(int argc, char *argv[]) {
         }
 #endif
 
-#ifdef WIN32 // dirty fix with win32
+#ifdef WIN32  // dirty fix with win32
         char tmp[10] = {0};
         strcpy(tmp, mode);
 #endif
         if (!config_parse(file_path)) {
-#ifdef WIN32 // dirty fix with win32
+#ifdef WIN32  // dirty fix with win32
             strcpy(mode, tmp);
 #endif
 
 #ifdef linux
-            if (eapol_flag) { // eable 802.1x authorization
+            if (eapol_flag) {  // eable 802.1x authorization
                 if (0 != try_smart_eaplogin()) {
                     printf("Can't finish 802.1x authorization!\n");
                     return 1;
@@ -188,9 +187,8 @@ void print_help(int exval) {
 }
 
 #ifdef linux
-int try_smart_eaplogin(void)
-{
-#define IFS_MAX     (64)
+int try_smart_eaplogin(void) {
+#define IFS_MAX (64)
     int ifcnt = IFS_MAX;
     iflist_t ifs[IFS_MAX];
     if (0 > getall_ifs(ifs, &ifcnt))
