@@ -10,11 +10,12 @@
 #include "debug.h"
 
 int daemon_flag = 0;
+char* pid_path;
 int pid_file_handle;
 
 void kill_daemon() {
     close(pid_file_handle);
-    remove("/tmp/dogcom.pid");
+    remove(pid_path);
 }
 
 void signal_handler(int signal) {
@@ -82,7 +83,7 @@ void daemonise() {
     open("/dev/null", O_WRONLY);
     open("/dev/null", O_RDWR);
 
-    pid_file_handle = open("/tmp/dogcom.pid", O_RDWR | O_CREAT, 0600);
+    pid_file_handle = open(pid_path, O_RDWR | O_CREAT, 0600);
     if (pid_file_handle < 0) {
         exit(1);
     }

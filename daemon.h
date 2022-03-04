@@ -6,6 +6,7 @@ void signal_handler(int signal);
 void daemonise();
 
 extern int daemon_flag;
+extern char* pid_path;
 extern int pid_file_handle;
 
 #endif  // DAEMON_H_
