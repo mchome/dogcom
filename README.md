@@ -11,6 +11,7 @@ Options:
         --conf <FILEPATH>, -c <FILEPATH>      import configuration file
         --bindip <IPADDR>, -b <IPADDR>        bind your ip address(default is 0.0.0.0)
         --log <LOGPATH>, -l <LOGPATH>         specify log file
+        --interface <IFNAME>, -i <IFNAME>     bind interface
         --802.1x, -x                          enable 802.1x
         --daemon, -d                          set daemon flag
         --eternal, -e                         set eternal flag
@@ -30,6 +31,7 @@ $ dogcom -m pppoe -c dogcom.conf -x # (PS: only on Linux build)
 $ dogcom -m pppoe -c dogcom.conf -e # eternal dogcoming (default times is 5)
 $ dogcom -m pppoe -c dogcom.conf -v
 $ dogcom -m dhcp -c dogcom.conf -b 10.2.3.12 -v
+$ dogcom -m dhcp -c dogcom.conf -i eth0.2 # (PS: only on Linux build)
 ```
 
 #### To build:

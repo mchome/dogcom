@@ -11,6 +11,7 @@ int eternal_flag = 0;
 char *log_path;
 char mode[10];
 char bind_ip[20];
+char bind_ifr_name[20];
 struct config drcom_config;
 
 static int read_d_config(char *buf, int size);

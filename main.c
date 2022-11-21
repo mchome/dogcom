@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
             {"bindip", required_argument, 0, 'b'},
             {"log", required_argument, 0, 'l'},
 #ifdef linux
+            {"interface", required_argument,0, 'i'}, 
             {"daemon", no_argument, 0, 'd'},
             {"802.1x", no_argument, 0, 'x'},
 #endif
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
         int c;
         int option_index = 0;
 #ifdef linux
-        c = getopt_long(argc, argv, "m:c:b:l:dxevh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:b:l:i:dxevh", long_options, &option_index);
 #else
         c = getopt_long(argc, argv, "m:c:b:l:evh", long_options, &option_index);
 #endif
@@ -98,6 +99,9 @@ int main(int argc, char *argv[]) {
 #endif
                 break;
 #ifdef linux
+            case 'i':
+                strcpy(bind_ifr_name, optarg);
+                break;
             case 'd':
                 daemon_flag = 1;
                 break;
@@ -151,6 +155,9 @@ int main(int argc, char *argv[]) {
             if (strlen(bind_ip) == 0) {
                 memcpy(bind_ip, default_bind_ip, sizeof(default_bind_ip));
             }
+            if (strlen(bind_ifr_name) == 0) {
+                memset(bind_ifr_name, 0, 20);
+            }
             dogcom(5);
         } else {
             return 1;
@@ -177,6 +184,7 @@ void print_help(int exval) {
     printf("\t--bindip <IPADDR>, -b <IPADDR>        bind your ip address(default is 0.0.0.0)\n");
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
 #ifdef linux
+    printf("\t--interface, -i                       bind interface\n");
     printf("\t--daemon, -d                          set daemon flag\n");
     printf("\t--802.1x, -x                          enable 802.1x\n");
 #endif

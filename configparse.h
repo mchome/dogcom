@@ -30,6 +30,7 @@ extern int eternal_flag;
 extern char *log_path;
 extern char mode[10];
 extern char bind_ip[20];
+extern char bind_ifr_name[20];
 
 int config_parse(char *filepath);
 
