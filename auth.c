@@ -12,6 +12,7 @@ typedef int socklen_t;
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <net/if.h>
 #endif
 
 #include "auth.h"
@@ -568,6 +569,7 @@ int dogcom(int try_times) {
 #endif
         return 1;
     }
+    
     // bind socket
     if (bind(sockfd, (struct sockaddr *)&bind_addr, sizeof(bind_addr)) < 0) {
 #ifdef WIN32
@@ -594,6 +596,21 @@ int dogcom(int try_times) {
 #endif
         return 1;
     }
+
+    // bind interface
+#ifdef linux
+    if (strlen(bind_ifr_name) > 0)
+    {
+        struct ifreq ifr;
+        memset(&ifr, 0, sizeof(ifr));
+        strcpy(ifr.ifr_name, bind_ifr_name);
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0)
+        {
+            perror("Failed to bind ifr");
+            return 1;
+        }
+    }
+#endif
 
     // start dogcoming
     if (strcmp(mode, "dhcp") == 0) {
