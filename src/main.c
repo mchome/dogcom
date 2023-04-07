@@ -7,9 +7,9 @@
 
 #ifdef linux
 #include <limits.h>
-#include "daemon.h"
+#include "daemon.h>
 #include "eapol.h"
-#include "libs/common.h"
+#include <libs/common.h>
 #endif
 
 #define VERSION "1.6.2"

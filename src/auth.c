@@ -18,9 +18,9 @@ typedef int socklen_t;
 #include "configparse.h"
 #include "debug.h"
 #include "keepalive.h"
-#include "libs/md4.h"
-#include "libs/md5.h"
-#include "libs/sha1.h"
+#include <libs/md4.h>
+#include <libs/md5.h>
+#include <libs/sha1.h>
 
 #define BIND_PORT 61440
 #define DEST_PORT 61440

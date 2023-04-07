@@ -1,8 +1,8 @@
 #ifdef linux
 
 #include "eapol.h"
-#include "libs/common.h"
-#include "libs/md5.h"
+#include <libs/common.h>
+#include <libs/md5.h>
 
 #include <arpa/inet.h>
 #include <net/ethernet.h>

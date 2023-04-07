@@ -39,7 +39,7 @@
 
 #include <string.h>
 
-#include "md4.h"
+#include <libs/md4.h>
 
 /*
  * The basic MD4 functions.

@@ -14,9 +14,9 @@ typedef int socklen_t;
 #include "configparse.h"
 #include "debug.h"
 #include "keepalive.h"
-#include "libs/md4.h"
-#include "libs/md5.h"
-#include "libs/sha1.h"
+#include <libs/md4.h>
+#include <libs/md5.h>
+#include <libs/sha1.h>
 
 int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]) {
     if (drcom_config.keepalive1_mod) {
