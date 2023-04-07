@@ -1,4 +1,3 @@
-#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,9 +6,15 @@
 
 #ifdef linux
 #include <limits.h>
-#include "daemon.h>
+#include "daemon.h"
 #include "eapol.h"
 #include <libs/common.h>
+#endif
+
+#ifdef _MSC_VER
+#include <libs/getopt4win.h>
+#else
+#include <getopt.h>
 #endif
 
 #define VERSION "1.6.2"

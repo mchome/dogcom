@@ -110,7 +110,7 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
         memset(keepalive_1_packet, 0, 42);
         keepalive_1_packet[0] = 0xff;
         int MD5A_len = 6 + strlen(drcom_config.password);
-        unsigned char MD5A_str[MD5A_len];
+        unsigned char* MD5A_str = (unsigned char*) malloc(MD5A_len);
         MD5A_str[0] = 0x03;
         MD5A_str[1] = 0x01;
         memcpy(MD5A_str + 2, seed, 4);
@@ -163,6 +163,7 @@ int keepalive_1(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsig
                 }
             }
         }
+        free(MD5A_str);
     }
 
     return 0;
