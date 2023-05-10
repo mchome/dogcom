@@ -3,7 +3,7 @@ name: "dogcom"
 on:
   push:
     branchies:
-      - "main"
+      - "master"
 
 jobs:
   build:
