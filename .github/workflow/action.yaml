@@ -1,0 +1,32 @@
+name: "dogcom"
+
+on:
+  push:
+    branchies:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - os: ubuntu-latest
+            triplet: x64-linux
+          - os: windows-latest
+            triplet: x64-windows
+
+    steps:
+      - uses: lukka/get-cmake@latest
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dogcom, dogcom.exe
