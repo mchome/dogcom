@@ -34,12 +34,15 @@ $ dogcom -m dhcp -c dogcom.conf -b 10.2.3.12 -v
 
 #### To build:
 
-```bash
-$ make # Linux
-$ make win32=y # Windows(MinGW)
-$ make test=y # For testing purposes
-$ make force_encrypt=y # Force open encrypt mode in PPPoE version
+Dogcom use cmake for building.
+
+CMake will detect your platform and compiler, then decide how to compile.
+
+If you want force-encrypt, you should add 
+```cmake
+set(FORCE_ENCRYPT ON)
 ```
+in CMakeLists.txt
 
 #### Openwrt-package
 [https://github.com/mchome/openwrt-dogcom](https://github.com/mchome/openwrt-dogcom)

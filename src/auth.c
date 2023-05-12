@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <time.h>
-#include <unistd.h>
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -14,13 +12,27 @@ typedef int socklen_t;
 #include <sys/socket.h>
 #endif
 
+
+#ifdef _MSC_VER
+#include <windows.h>
+inline void sleep(int seconds) {
+    Sleep(1000 * seconds);
+}
+inline void usleep(int useconds) {
+    Sleep(useconds);
+}
+#else
+#include <unistd.h>
+#include <sys/time.h>
+#endif
+
 #include "auth.h"
 #include "configparse.h"
 #include "debug.h"
 #include "keepalive.h"
-#include "libs/md4.h"
-#include "libs/md5.h"
-#include "libs/sha1.h"
+#include <libs/md4.h>
+#include <libs/md5.h>
+#include <libs/sha1.h>
 
 #define BIND_PORT 61440
 #define DEST_PORT 61440
@@ -102,7 +114,8 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     } else {
         login_packet_size = 330;
     }
-    unsigned char login_packet[login_packet_size], recv_packet[1024], MD5A[16], MACxorMD5A[6], MD5B[16], checksum1[8], checksum2[4];
+    unsigned char* login_packet = (unsigned char*) malloc(login_packet_size);
+    unsigned char recv_packet[1024], MD5A[16], MACxorMD5A[6], MD5B[16], checksum1[8], checksum2[4];
     memset(login_packet, 0, login_packet_size);
     memset(recv_packet, 0, 100);
 
@@ -112,7 +125,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     login_packet[2] = 0x00;
     login_packet[3] = strlen(drcom_config.username) + 20;
     int MD5A_len = 6 + strlen(drcom_config.password);
-    unsigned char MD5A_str[MD5A_len];
+    unsigned char* MD5A_str = (unsigned char*)malloc(MD5A_len);
     MD5A_str[0] = 0x03;
     MD5A_str[1] = 0x01;
     memcpy(MD5A_str + 2, seed, 4);
@@ -140,7 +153,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     }
     memcpy(login_packet + 58, MACxorMD5A, sizeof(MACxorMD5A));
     int MD5B_len = 9 + strlen(drcom_config.password);
-    unsigned char MD5B_str[MD5B_len];
+    unsigned char* MD5B_str = (unsigned char*) malloc (MD5B_len);
     memset(MD5B_str, 0, MD5B_len);
     MD5B_str[0] = 0x01;
     memcpy(MD5B_str + 1, drcom_config.password, strlen(drcom_config.password));
@@ -229,7 +242,7 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     }
     login_packet[counter] = 0x02;
     login_packet[counter + 1] = 0x0c;
-    unsigned char checksum2_str[counter + 18];  // [counter + 14 + 4]
+    unsigned char* checksum2_str = (unsigned char*) malloc (counter + 18);  // [counter + 14 + 4]
     memset(checksum2_str, 0, counter + 18);
     unsigned char checksum2_tmp[6] = {0x01, 0x26, 0x07, 0x11};
     memcpy(checksum2_str, login_packet, counter + 2);
@@ -358,6 +371,11 @@ int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsign
     if (recvfrom(sockfd, recv_packet, 1024, 0, (struct sockaddr *)&addr, &addrlen) >= 0) {
         DEBUG_PRINT(("Get notice packet."));
     }
+
+    free(login_packet);
+    free(MD5A_str);
+    free(MD5B_str);
+    free(checksum2_str);
 
     return 0;
 }

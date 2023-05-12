@@ -4,9 +4,11 @@ test.conf
 dogcom
 main
 .vscode
-
+build/
 # Prerequisites
 *.d
+.DS_Store
+.idea/
 
 # Object files
 *.o
